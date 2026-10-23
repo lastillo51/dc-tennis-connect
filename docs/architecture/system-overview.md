@@ -178,6 +178,82 @@ Semgrep will perform static application security analysis.
 
 GitHub Actions will automate testing and security checks in later phases.
 
+### Development Dependency Management and Compatibility
+
+DC Tennis Connect will maintain version-controlled Python dependencies to support reproducible development, automated testing, and future CI/CD integration.
+
+Python dependencies are currently managed using a project-specific virtual environment (`.venv`) and a `requirements.txt` file.
+
+#### Current Development Dependencies
+
+The following dependency versions were verified during Phase 2B:
+
+| Dependency | Version |
+|---|---|
+| Python | 3.14 |
+| FastAPI | 0.159.1 |
+| Starlette | 1.9.0 |
+| HTTPX | 0.28.1 |
+| Pytest | 9.1.1 |
+
+These versions represent the development environment at the time of verification and may change as the project evolves.
+
+#### Known Dependency Compatibility Warning
+
+During Phase 2B, automated testing produced the following warning:
+
+`StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated; install httpx2 instead.`
+
+The warning originates from Starlette's testing integration, which FastAPI uses through `TestClient`.
+
+The current automated tests execute successfully despite the warning.
+
+The dependency validation command:
+
+`python -m pip check`
+
+returned:
+
+`No broken requirements found.`
+
+This indicates that the installed packages satisfy their declared dependency requirements. It does not guarantee compatibility with future releases.
+
+#### Current Decision
+
+The project will retain the currently working dependency versions until the recommended migration path has been reviewed and tested.
+
+No dependency changes will be introduced solely to suppress the warning.
+
+The warning is classified as a **known development dependency compatibility issue**, not a confirmed security vulnerability.
+
+#### Planned Follow-Up Actions
+
+1. Review official FastAPI and Starlette release notes and migration guidance.
+2. Determine whether HTTPX2 is the recommended replacement for the installed versions.
+3. Evaluate the impact of any migration on existing automated tests.
+4. Test dependency changes within the Python virtual environment.
+5. Run the complete Pytest suite after dependency updates.
+6. Run `python -m pip check` to verify declared dependency compatibility.
+7. Update `requirements.txt` with the validated dependency versions.
+8. Remove this known issue once the warning has been resolved and regression tests pass.
+
+#### Future DevSecOps Integration
+
+As the project evolves, dependency management will be integrated into the DevSecOps workflow.
+
+Future GitHub Actions pipelines should:
+
+- Install dependencies from the version-controlled dependency manifest.
+- Run automated tests.
+- Check dependency compatibility.
+- Execute security scans using Trivy and Semgrep where applicable.
+- Report failures and relevant warnings before changes are merged.
+
+Dependency upgrades will be introduced through feature branches and reviewed through GitHub pull requests.
+
+Significant compatibility issues will be documented until resolved.
+
+
 ## 8. Security and Privacy
 
 The application will follow these principles:
