@@ -1,0 +1,58 @@
+# Git repository metadata
+.git/
+.gitignore
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Environment variables and secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Local data and backups
+*.sqlite3
+*.db
+*.bak
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Infrastructure and development directories
+terraform/
+kubernetes/
+security/
+docs/
+data/
+scripts/
+.github/
+
+# Local tests are not needed in the runtime image
+app/tests/
+
+# Other local container configuration
+docker/
