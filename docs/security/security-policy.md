@@ -59,6 +59,16 @@ Critical and High findings must be reviewed and documented.
 
 Automatic vulnerability enforcement will be introduced after establishing a consistent, reviewed baseline.
 
+### Branch Protection
+
+GitHub branch protection is deferred during initial development.
+
+The project currently uses a manual pull request review process,
+supported by automated Pytest, Semgrep, and Trivy checks.
+
+Branch protection will be reconsidered before public deployment
+or when additional developers begin contributing.
+
 ## 5. Vulnerability Prioritization
 
 | Severity | Required Handling |
