@@ -20,9 +20,11 @@ RUN groupadd --system appgroup \
 # Copy dependency definitions first for build caching.
 COPY requirements.txt .
 
-# Install application dependencies.
+# Install dependencies and remove packaging tools
+# that are not required by the running application.
 RUN python -m pip install --no-cache-dir \
-    -r requirements.txt
+        -r requirements.txt \
+    && python -m pip uninstall -y pip setuptools wheel
 
 # Copy application source code.
 COPY --chown=appuser:appgroup app/ ./app/
