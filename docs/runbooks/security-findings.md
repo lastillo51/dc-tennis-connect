@@ -183,3 +183,71 @@ This Markdown register is intended to be version-controlled. Raw scanner reports
 ### Next Review
 
 Update this register after reconciling Trivy scan results, validating the post-remediation container, and implementing the initial GitHub Actions security workflow.
+
+---
+
+## GitHub Actions CI Baseline
+
+### Workflow Information
+
+- Workflow: DC Tennis Connect Security CI
+- Workflow file: `.github/workflows/security-ci.yml`
+- Branch: `security/initial-scanning`
+- Initial successful execution date: 2026-10-25
+- GitHub Actions run URL: Add actual run URL
+- Commit SHA: Add actual commit SHA
+
+### Automated Checks
+
+| Check | Execution Result | Enforcement |
+|---|---|---|
+| Python Tests | Passed | Test failures block the job |
+| Dependency consistency | Passed | Dependency conflicts block the job |
+| Semgrep SAST | Passed | Security findings currently report-only |
+| Trivy Container Scan | Passed | Vulnerabilities currently report-only |
+
+### Security Controls Implemented
+
+- Automated execution on configured Git push and pull request events.
+- Separate jobs for application testing, static analysis, and image scanning.
+- Read-only GitHub Actions repository permissions.
+- Docker image builds in GitHub-hosted runners.
+- Trivy installation and scanning using the official Ubuntu package repository.
+- Visibility into test results and security findings.
+
+### Known Limitations
+
+- Successful scanner jobs do not guarantee zero vulnerabilities.
+- Trivy and Semgrep findings are not yet enforced as merge-blocking failures.
+- Existing vulnerability findings require continued review.
+- GitHub Actions dependencies are not yet pinned to verified commit SHAs.
+- Scanner versions and vulnerability databases may change between runs.
+- The CI-built image may differ from a previously scanned local image.
+- Container image-layer residual risk remains under investigation.
+
+### Next Actions
+
+1. Record actual CI scan counts and compare them with the local security baseline.
+2. Review outstanding High/Critical vulnerabilities.
+3. Define security enforcement thresholds.
+4. Harden GitHub Actions permissions and dependencies.
+5. Evaluate required status checks and branch protection.
+6. Repeat the CI workflow after hardening changes.
+
+### Security Enforcement Decision
+
+The initial GitHub Actions workflow is operational.
+
+Automated Python tests and dependency consistency checks are enforced.
+
+Semgrep `ERROR` findings are configured to fail the static analysis job.
+
+Trivy currently reports container vulnerabilities without automatically failing the job.
+
+**Outstanding risk:** The recorded full Trivy baseline contains 44 High-severity findings, while a separate targeted scan reported zero High/Critical findings. These results require reconciliation using equivalent image contents, scanner settings, and vulnerability databases.
+
+**Decision:** Defer automatic Trivy vulnerability gating until the discrepancy is investigated and outstanding findings are assessed.
+
+This decision does not constitute acceptance or resolution of the vulnerabilities.
+
+**Follow-up:** Review the CI-built image findings, establish a verified baseline, and implement risk-based enforcement before public deployment.
