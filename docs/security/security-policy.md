@@ -2,158 +2,270 @@
 
 ## 1. Purpose
 
-Define security expectations for application development, dependency management, containerization, automated testing, vulnerability assessment, and deployment.
+This document establishes the security requirements and development practices for DC Tennis Connect.
 
-This policy will evolve as DC Tennis Connect introduces additional functionality.
+The policy supports secure application development, infrastructure management, automated testing, vulnerability management, and deployment.
+
+It is intended to evolve as new technologies and application features are introduced.
 
 ## 2. Scope
 
-This policy applies to:
+This policy applies to the following project components:
 
-- Python and FastAPI application code.
-- Python dependencies.
-- Docker images and Docker Compose.
-- GitHub repositories and workflows.
-- PostgreSQL configuration.
-- Future Kubernetes and Terraform infrastructure.
-- Future authentication, scheduling, and player information.
+| Component | Scope |
+|---|---|
+| Application | Python, FastAPI, and future frontend components |
+| Dependencies | Python packages and third-party libraries |
+| Containers | Docker images and Docker Compose |
+| Database | PostgreSQL and future data persistence |
+| Source Control | Git, GitHub, and pull requests |
+| CI/CD | GitHub Actions, Pytest, Semgrep, and Trivy |
+| Infrastructure | Future Kubernetes and Terraform configurations |
+| User Data | Future authentication, profiles, availability, and scheduling information |
 
-## 3. Development Security Requirements
+New components will be added to this table as the project expands.
 
-- Develop changes using dedicated Git feature branches.
-- Review changes through pull requests.
-- Do not commit credentials or secrets.
-- Validate application inputs.
-- Apply least-privilege access controls.
-- Maintain automated regression tests.
-- Review security findings before merging significant changes.
-- Keep security documentation updated.
+## 3. Security Principles
 
-## 4. CI Security Controls
+DC Tennis Connect follows these principles:
 
-### Pytest
+- **Least Privilege:** Grant only the permissions necessary for each component.
+- **Secure by Default:** Prefer secure configurations during initial implementation.
+- **Defense in Depth:** Use multiple complementary security controls.
+- **Automated Verification:** Test and scan changes consistently.
+- **Minimal Exposure:** Limit unnecessary network access and runtime dependencies.
+- **Traceability:** Document security findings, remediation decisions, and exceptions.
+- **Continuous Improvement:** Reassess security controls as the application evolves.
 
-Automated application tests must pass.
+## 4. Secure Development Requirements
 
-Test failures block the CI job.
+All application and infrastructure changes should follow these practices:
 
-### Dependency Consistency
+1. Develop changes using dedicated Git feature branches.
+2. Review changes through GitHub pull requests.
+3. Do not commit credentials, tokens, or other secrets.
+4. Validate external and user-provided input.
+5. Apply appropriate authentication and authorization as features are introduced.
+6. Maintain automated tests for implemented functionality.
+7. Review relevant security scan results before merging.
+8. Update affected architecture and security documentation.
 
-`python -m pip check` must complete successfully.
+## 5. Continuous Integration Security Controls
 
-### Semgrep
+### 5.1 Current CI Controls
 
-Semgrep analyzes application source code using approved rulesets.
+| Control | Technology | Current Enforcement |
+|---|---|---|
+| Automated application testing | Pytest | Test failures fail the job |
+| Dependency consistency | pip | Dependency conflicts fail the job |
+| Static application security testing | Semgrep | Configured `ERROR` findings fail the job |
+| Container vulnerability scanning | Trivy | Findings reported; vulnerability gate deferred |
+| Workflow permissions | GitHub Actions | Read-only repository access |
+| Workflow execution | GitHub Actions | Timeouts and concurrency controls |
 
-Findings classified as `ERROR` by the configured rules will fail the Semgrep CI job.
+These controls represent the current Phase 4 implementation.
 
-Other findings will be assessed through broader scans and security reviews.
+### 5.2 Planned CI Improvements
 
-### Trivy
+- Pin GitHub Actions dependencies to verified commit SHAs.
+- Establish a consistent Trivy vulnerability baseline.
+- Introduce risk-based vulnerability enforcement.
+- Improve scan reporting and historical comparisons.
+- Expand automated security checks for Kubernetes and Terraform.
+- Reevaluate CI requirements as additional application features are introduced.
 
-Trivy scans container images for known vulnerabilities.
+### 5.3 Branch Protection
 
-During the initial CI implementation, vulnerabilities are reported without automatically failing the job.
+GitHub branch protection is deferred during initial solo development.
 
-Critical and High findings must be reviewed and documented.
+The project currently relies on manual pull request review supported by automated CI checks.
 
-Automatic vulnerability enforcement will be introduced after establishing a consistent, reviewed baseline.
+Branch protection will be reconsidered before public deployment or when additional developers begin contributing.
 
-### Branch Protection
+## 6. Vulnerability Management
 
-GitHub branch protection is deferred during initial development.
-
-The project currently uses a manual pull request review process,
-supported by automated Pytest, Semgrep, and Trivy checks.
-
-Branch protection will be reconsidered before public deployment
-or when additional developers begin contributing.
-
-## 5. Vulnerability Prioritization
+### 6.1 Severity and Prioritization
 
 | Severity | Required Handling |
 |---|---|
-| Critical | Prompt investigation and remediation planning |
-| High | Priority investigation and remediation planning |
-| Medium | Document and prioritize based on exposure |
-| Low | Track through routine maintenance |
-| Unknown | Investigate where potential impact warrants it |
+| Critical | Investigate promptly and prioritize remediation |
+| High | Perform priority investigation and remediation planning |
+| Medium | Document and prioritize based on exposure and impact |
+| Low | Track through routine dependency and infrastructure maintenance |
+| Unknown | Investigate where potential impact warrants additional review |
 
-Severity alone does not determine exploitability.
+Severity alone does not establish exploitability.
 
-Assess affected components, exposure, available fixes, and potential impact.
+Risk assessments should consider affected components, application exposure, available fixes, and potential impact.
 
-## 6. Security Finding Status
+### 6.2 Finding Status
 
-Findings may be classified as:
+| Status | Definition |
+|---|---|
+| Open | Finding identified but not yet assessed |
+| Investigating | Applicability and security impact under review |
+| Remediation Planned | Corrective action identified but not completed |
+| Resolved | Remediation implemented and verified |
+| Risk Accepted | Risk formally accepted with documented justification |
+| False Positive | Finding determined not applicable based on supporting evidence |
 
-- Open
-- Investigating
-- Remediation Planned
-- Resolved
-- Risk Accepted
-- False Positive
+### 6.3 Findings Register
 
-Risk acceptance requires documented justification, an accountable reviewer, and a future reassessment date.
+Security findings, remediation history, scan results, and outstanding risks are maintained in:
 
-## 7. Security Exceptions
+`docs/runbooks/security-findings.md`
 
-A security exception must record:
+This policy defines security requirements. The findings register records actual security observations and decisions.
 
-- Finding identifier.
-- Affected component.
-- Reason remediation is deferred.
-- Risk assessment.
-- Compensating controls.
-- Responsible reviewer.
-- Review or expiration date.
+## 7. Security Exceptions and Risk Acceptance
 
-Exceptions must not be used simply to conceal scanner findings.
+Security exceptions must include:
 
-## 8. Container Security
+| Field | Required Information |
+|---|---|
+| Finding ID | Unique identifier |
+| Affected Component | Package, service, or configuration |
+| Risk Description | Security concern and potential impact |
+| Justification | Reason remediation is deferred |
+| Compensating Controls | Measures reducing exposure |
+| Responsible Reviewer | Person accountable for the decision |
+| Review Date | Date for reassessment |
+| Status | Current exception status |
 
-Containerized applications should:
+Exceptions must be reviewed periodically and must not be used to conceal findings.
 
-- Run as non-root users.
-- Avoid unnecessary runtime dependencies.
-- Exclude secrets from container images.
+Risk acceptance does not mean the underlying vulnerability has been resolved.
+
+## 8. Container and Infrastructure Security
+
+### 8.1 Docker and Docker Compose
+
+Containerized services should:
+
+- Run as non-root users where practical.
+- Minimize unnecessary runtime packages.
+- Avoid embedding secrets in images.
 - Use maintained base images.
-- Minimize exposed ports.
+- Limit published network ports.
 - Separate application and database services.
-- Preserve necessary persistent data.
-- Be scanned before deployment.
+- Preserve persistent data using appropriate storage.
+- Undergo vulnerability scanning.
 
-Image digest pinning and stronger runtime hardening will be introduced incrementally.
+### 8.2 Planned Container Hardening
 
-## 9. GitHub Actions Security
+- Evaluate multi-stage Docker builds.
+- Pin base images to verified digests.
+- Review container filesystem permissions.
+- Evaluate read-only filesystems and Linux capability restrictions.
+- Review container image-layer risks.
+- Introduce appropriate resource limits.
 
-Workflows should:
+### 8.3 Kubernetes and Terraform
 
-- Use least-privilege permissions.
-- Avoid unnecessary access to secrets.
-- Apply reasonable execution timeouts.
-- Prevent unnecessary overlapping runs.
-- Use trusted and verified third-party actions.
-- Pin actions to verified commit SHAs when practical.
-- Fail when required tests or scanner execution fail.
+Security requirements for Kubernetes and Terraform will be defined as those technologies are introduced.
 
-## 10. Deployment Security
+Planned areas include:
 
-The current application is intended for local development.
+- Kubernetes RBAC.
+- Pod and container security contexts.
+- Network policies.
+- Kubernetes Secret handling.
+- Infrastructure configuration scanning.
+- Terraform state protection.
+- Least-privilege infrastructure permissions.
 
-Before public deployment, the project must evaluate:
+## 9. Secrets and Data Protection
+
+### 9.1 Current Development Practices
+
+- Credentials must not be committed to Git.
+- Local environment files containing secrets must be excluded from version control.
+- Application and database services should use the minimum required access.
+- Sensitive values must not be unnecessarily exposed through logs or CI output.
+
+### 9.2 Future Application Requirements
+
+Before introducing real player information, the project must implement appropriate controls for:
 
 - Authentication and authorization.
-- HTTPS and secure network exposure.
-- Secret management.
-- Database access controls.
-- Vulnerability remediation.
+- Player profile information.
+- Availability and scheduling details.
+- Secure session handling.
+- Protection of stored and transmitted data.
+- Appropriate data retention and deletion.
+
+## 10. GitHub Actions Security
+
+GitHub Actions workflows should:
+
+- Use least-privilege token permissions.
+- Avoid unnecessary access to secrets.
+- Use trusted and verified third-party actions.
+- Apply reasonable execution timeouts.
+- Prevent unnecessary overlapping runs.
+- Fail when required tests or scanner execution fail.
+- Pin external actions to verified commit SHAs as part of future hardening.
+
+Workflow changes must be reviewed before merging.
+
+## 11. Deployment Security Requirements
+
+DC Tennis Connect is currently intended for local development.
+
+Before public deployment, the project must review and implement appropriate controls for:
+
+- Authentication and authorization.
+- HTTPS and secure network access.
+- Production secrets management.
+- Database security.
+- Outstanding vulnerability remediation.
 - Logging and monitoring.
 - Backup and recovery.
-- Required CI security checks.
+- Security testing and CI enforcement.
+- User data protection.
 
-## 11. Policy Maintenance
+A successful CI workflow does not automatically authorize production deployment.
 
-This document will be updated when significant security requirements or architectural decisions change.
+## 12. Policy Maintenance and Change Management
 
-Security policy changes must be version-controlled and reviewed through GitHub pull requests.
+### 12.1 When to Update This Policy
+
+Review and update this policy when:
+
+- A new technology is introduced.
+- A significant application feature is implemented.
+- Security architecture changes.
+- CI/CD enforcement rules change.
+- New data protection requirements arise.
+- The application moves toward public deployment.
+
+### 12.2 Change Management Process
+
+1. Identify the affected policy section.
+2. Update the relevant security requirements.
+3. Review related architecture and findings documentation.
+4. Commit the changes on a Git feature branch.
+5. Review changes through a GitHub pull request.
+6. Merge approved changes into `main`.
+
+### 12.3 Policy Review History
+
+| Date | Phase | Change | Status |
+|---|---|---|---|
+| 2026-10-26 | Phase 4 | Reorganized policy and documented current DevSecOps controls | Proposed |
+
+Future policy changes should be added to this table.
+
+---
+
+## 13. Related Documentation
+
+| Document | Purpose |
+|---|---|
+| `docs/runbooks/security-findings.md` | Security findings, scan results, remediation, and risk decisions |
+| `docs/architecture/system-overview.md` | Application architecture and security design |
+| `.github/workflows/security-ci.yml` | Automated testing and security scanning configuration |
+| `docker/Dockerfile` | FastAPI container build configuration |
+| `docker/compose.yaml` | Local application and database service configuration |
+
+Additional security documentation can be referenced here as the project expands.
