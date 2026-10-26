@@ -1,0 +1,87 @@
+name: DC Tennis Connect Security CI
+
+on:
+  push:
+    branches:
+      - main
+      - security/**
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: Python Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+
+      - name: Check dependencies
+        run: |
+          python -m pip check
+
+      - name: Run Pytest
+        run: |
+          python -m pytest app/tests/ -v
+
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Semgrep
+        run: |
+          python -m pip install semgrep
+
+      - name: Run Semgrep security scan
+        run: |
+          semgrep scan \
+            --config p/security-audit \
+            app/
+
+  trivy:
+    name: Trivy Container Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f docker/Dockerfile \
+            -t dc-tennis-connect:ci \
+            .
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: image
+          image-ref: dc-tennis-connect:ci
+          format: table
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          exit-code: "0"
