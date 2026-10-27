@@ -1,30 +1,69 @@
 # DC Tennis Connect
 
-## Project Overview
+**A Washington, D.C. tennis court discovery and player coordination platform — built as a hands-on DevSecOps learning project.**
 
-DC Tennis Connect is a web-based application designed to help tennis players in Washington, D.C. discover public tennis courts, review published court schedules, coordinate hitting sessions, and obtain directions using Google Maps.
+**Current Development Phase:** Phase 6 — Terraform and Infrastructure as Code
+
+**Project Status:** Active Development
+
+## 1. Project Overview
+
+DC Tennis Connect is a web-based application designed to help tennis players in Washington, D.C. discover public tennis courts, review published court scheduling information, coordinate hitting sessions, and obtain directions using Google Maps.
 
 The application will use reliable, publicly available court information to help players identify potential playing times.
 
-Players will be able to organize matches around published operating hours, reservation information, and known court restrictions.
+Players will eventually be able to organize matches around published operating hours, reservation information, and known court restrictions.
 
-DC Tennis Connect will not independently reserve public courts or guarantee that a court is physically unoccupied.
+**Important:** DC Tennis Connect does not independently reserve public courts or guarantee that a court is physically unoccupied.
 
-## Project Goals
+### Project Goals
 
-**Application Goal:** Simplify tennis planning by combining public court discovery, published scheduling information, player matching, match coordination, and navigation.
+**Application Goal**
 
-**Learning Goal:** Gain hands-on experience implementing DevSecOps technologies throughout the software development lifecycle.
+Simplify tennis planning by combining public court discovery, published scheduling information, player matching, match coordination, and navigation.
 
-## Target Users
+**Learning Goal**
 
-- Recreational tennis players in Washington, D.C.
-- Players looking for public tennis courts.
-- Players searching for compatible hitting partners.
-- Players coordinating matches around court schedules.
-- Players unfamiliar with local court locations.
+Gain practical experience implementing DevSecOps technologies throughout the software development lifecycle, including containerization, security scanning, CI/CD, Kubernetes, and infrastructure automation.
 
-## Planned Features
+## 2. Current Implementation
+
+The project currently provides a working FastAPI backend and a local DevSecOps development environment.
+
+### Implemented
+
+- Python FastAPI backend with modular API routing.
+- Sample tennis court directory using fictional court records.
+- Court filtering and request validation.
+- Google Maps destination URL generation.
+- Health-check endpoint.
+- Automated application tests using Pytest.
+- Docker containerization and Docker Compose configuration.
+- Local PostgreSQL container with persistent storage.
+- Trivy container vulnerability scanning.
+- Semgrep static application security scanning.
+- GitHub Actions CI workflow for testing and security checks.
+- Local Kubernetes deployment using kind.
+- Kubernetes Deployment and ClusterIP Service.
+- Kubernetes ConfigMap integration.
+- Kubernetes health probes, resource constraints, and security contexts.
+- Git feature branching and pull request workflows.
+
+### Not Yet Implemented
+
+- Responsive end-user web interface.
+- Real Washington, D.C. public tennis court data integration.
+- Database persistence for application records.
+- Player registration and authentication.
+- Player profiles and skill ratings.
+- Hitting partner matching.
+- Match scheduling and invitations.
+- Email and SMS notifications.
+- Public cloud hosting and HTTPS access.
+
+The current API uses fictional sample data for development and testing.
+
+## 3. Planned Application Features
 
 ### Must Have
 
@@ -60,10 +99,12 @@ DC Tennis Connect will not independently reserve public courts or guarantee that
 - Distance-based court filtering.
 - Dedicated iOS and Android applications.
 
-## How the Application Will Work
+## 4. How the Application Will Work
+
+The planned user workflow is:
 
 1. A player searches for a public tennis court.
-2. The application displays the court's location, published operating hours, reservation information, and known restrictions.
+2. The application displays its location, published operating hours, reservation information, and known restrictions.
 3. The player reviews potential playing times.
 4. The player selects a court, date, and time for a proposed hitting session.
 5. The player invites a compatible hitting partner.
@@ -75,7 +116,7 @@ Scheduling a match through DC Tennis Connect does not constitute an official cou
 
 Published operating hours do not guarantee that a court is physically unoccupied.
 
-## Court Availability Approach
+## 5. Court Availability Approach
 
 Court scheduling information will come from reliable, authorized public sources.
 
@@ -86,7 +127,7 @@ Potential sources include:
 - Official court reservation platforms where information is publicly accessible and reuse is permitted.
 - Published facility operating schedules and closure notices.
 
-The application will distinguish:
+The application will distinguish between:
 
 - Published operating hours.
 - Verified reservable time slots.
@@ -95,60 +136,258 @@ The application will distinguish:
 - Known closures.
 - Unknown availability.
 
-The MVP will initially use manually verified public information.
+The initial MVP will use manually verified public information.
 
 Automated updates may be introduced after confirming that the relevant sources permit programmatic access.
 
-## Technology Stack
+The application will not represent unverified availability as confirmed.
 
-| Category | Technology |
-|---|---|
-| Version Control | Git and GitHub |
-| Backend | Python and FastAPI |
-| Frontend | HTML, CSS, JavaScript, Jinja2 |
-| Database | PostgreSQL |
-| Containers | Docker Engine and Docker Compose |
-| Infrastructure as Code | Terraform |
-| Container Orchestration | Kubernetes and kind |
-| Container Security | Trivy |
-| Static Security Analysis | Semgrep |
-| CI/CD | GitHub Actions |
-| Testing | Pytest |
-| Navigation | Google Maps URLs |
+## 6. Technology Stack
 
-## Development Environment
+| Category | Technology | Status |
+|---|---|---|
+| Version Control | Git and GitHub | Implemented |
+| Backend | Python and FastAPI | Implemented |
+| Frontend | HTML, CSS, JavaScript, Jinja2 | Planned |
+| Database | PostgreSQL | Local container configured |
+| Containers | Docker Engine and Docker Compose | Implemented |
+| Infrastructure as Code | Terraform | Phase 6 — In Progress |
+| Container Orchestration | Kubernetes and kind | Implemented locally |
+| Container Security | Trivy | Implemented |
+| Static Security Analysis | Semgrep | Implemented |
+| CI/CD | GitHub Actions | Implemented |
+| Testing | Pytest | Implemented |
+| Navigation | Google Maps URLs | Backend URL generation implemented |
+
+Technologies will be added or updated as the architecture evolves.
+
+## 7. Development Environment
+
+The primary development environment consists of:
 
 - Ubuntu Desktop 26.04.1 LTS.
 - VMware Workstation Pro.
 - Visual Studio Code.
-- Local-first development environment.
+- Python virtual environments.
+- Docker Engine and Docker Compose.
+- Local kind Kubernetes cluster.
+- Git and GitHub.
 
-## Project Status
+Development is currently performed locally before deployment to external infrastructure.
 
-Phase 1: Development environment and directory structure completed.
+## 8. Project Structure
 
-Phase 2A: Git, GitHub, and project documentation in progress.
+The repository is organized around application development, infrastructure, testing, and documentation.
 
-## Development Roadmap
+```text
+dc-tennis-connect/
+├── .github/
+│   └── workflows/
+├── app/
+│   ├── api/
+│   └── tests/
+├── docker/
+│   ├── Dockerfile
+│   └── compose.yaml
+├── kubernetes/
+│   ├── kind/
+│   ├── base/
+│   └── overlays/
+├── terraform/
+│   ├── environments/
+│   │   ├── local/
+│   │   └── cloud/
+│   └── modules/
+├── docs/
+│   ├── architecture/
+│   ├── security/
+│   └── runbooks/
+├── requirements.txt
+├── .dockerignore
+├── .gitignore
+└── README.md
+```
 
-1. Establish project documentation and Git workflows.
-2. Build the court directory and published schedule display.
-3. Implement Google Maps navigation.
-4. Introduce player profiles and match scheduling.
-5. Containerize the application.
-6. Introduce automated testing and security scanning.
-7. Deploy to a local Kubernetes cluster.
-8. Explore Terraform infrastructure provisioning.
-9. Expand player matching, notifications, and operational features.
+The Terraform directories are being introduced during Phase 6 and may initially be empty.
 
-## Cost Considerations
+The structure is designed to support future application functionality and cloud environments without requiring a major reorganization.
+
+## 9. DevSecOps Implementation
+
+### Version Control
+
+Git and GitHub are used for source control, feature branching, pull requests, and code review.
+
+### Automated Testing
+
+Pytest provides automated verification of the FastAPI application.
+
+The current test suite contains 16 passing tests.
+
+### Containerization
+
+Docker packages the FastAPI application into a portable container.
+
+Docker Compose provides the local application and PostgreSQL environment.
+
+### Security Scanning
+
+Trivy scans container images for known vulnerabilities.
+
+Semgrep performs static analysis of application source code.
+
+Security findings, remediation decisions, and outstanding risks are documented in `docs/runbooks/security-findings.md`.
+
+### CI/CD
+
+GitHub Actions automatically runs:
+
+- Python application tests.
+- Dependency consistency checks.
+- Semgrep static security analysis.
+- Trivy container vulnerability scanning.
+
+Trivy vulnerability findings are currently report-only. Additional enforcement will be introduced after reviewing the vulnerability baseline.
+
+### Kubernetes
+
+The application is deployed locally using kind.
+
+The Kubernetes configuration includes:
+
+- FastAPI Deployment.
+- ClusterIP Service.
+- ConfigMap.
+- Health probes.
+- Resource requests and limits.
+- Restricted container security settings.
+
+### Infrastructure as Code
+
+Phase 6 introduces Terraform for declarative infrastructure management.
+
+Initial exercises will use local infrastructure resources before introducing cloud infrastructure.
+
+## 10. Development Roadmap
+
+| Phase | Focus | Status |
+|---|---|---|
+| Phase 1 | Development environment setup | Complete |
+| Phase 2A | Git, GitHub, and documentation | Complete |
+| Phase 2B | FastAPI application foundation | Complete |
+| Phase 3 | Docker and Docker Compose | Complete |
+| Phase 4 | Security scanning and GitHub Actions | Complete |
+| Phase 5 | Kubernetes with kind | Complete |
+| Phase 6 | Terraform and Infrastructure as Code | In Progress |
+| Phase 7 | Cloud deployment and public access | Planned |
+| Phase 8 | Production security and operational readiness | Planned |
+
+### Current Focus — Phase 6
+
+- Install and verify Terraform.
+- Learn Terraform configuration and state management.
+- Practice infrastructure provisioning locally.
+- Introduce variables, outputs, and reusable modules.
+- Implement Terraform validation and security scanning.
+- Integrate infrastructure changes into GitHub workflows.
+- Prepare for future cloud deployment.
+
+### Application Development Backlog
+
+The following features remain planned independently of infrastructure learning:
+
+- Responsive frontend.
+- Public tennis court data integration.
+- PostgreSQL application persistence.
+- Authentication and player profiles.
+- Player matching and match scheduling.
+- Notifications.
+
+## 11. Cloud Deployment Goal
+
+A future phase will make DC Tennis Connect accessible through a public HTTPS URL.
+
+The target is a responsive application usable from desktop and mobile browsers.
+
+Cloud deployment planning will include:
+
+- Appropriate hosting infrastructure.
+- Public HTTPS access and DNS.
+- Database persistence.
+- Secure configuration and secret management.
+- Automated deployment workflows.
+- Logging, monitoring, and recovery.
+- Security validation before public access.
+
+Kubernetes and Terraform will be evaluated as deployment options, but the application will not require a managed Kubernetes service if a simpler hosting approach is more economical.
+
+## 12. Security and Privacy
+
+The project follows secure development practices, including:
+
+- Least-privilege access.
+- Non-root container execution.
+- Automated testing and security scanning.
+- Protection of credentials and environment files.
+- Input validation.
+- Security findings documentation.
+- Review of infrastructure changes.
+
+The current environment is intended for local development and learning.
+
+The application is not yet approved for public production deployment.
+
+### Security Documentation
+
+- `docs/security/security-policy.md`
+- `docs/runbooks/security-findings.md`
+
+Outstanding vulnerabilities remain tracked for future investigation and remediation.
+
+## 13. Cost Considerations
 
 The project prioritizes free and open-source technologies.
 
-Local development will not require paid cloud infrastructure.
+Current local development does not require paid cloud infrastructure.
 
-Google Maps directions will use standard URLs rather than paid mapping APIs.
+Google Maps directions use standard URLs rather than paid mapping APIs.
 
-External hosting, SMS delivery, and certain third-party data services may introduce costs in later phases.
+Potential future costs include:
+
+- Cloud hosting.
+- Database hosting and storage.
+- Domain registration.
+- SMS delivery.
+- Third-party data services.
+
+Free tiers and trial offerings will be evaluated before provisioning cloud resources.
 
 Any paid service must be evaluated and approved before implementation.
+
+## 14. Documentation and Maintenance
+
+The project maintains separate documentation for:
+
+- Application requirements.
+- System architecture.
+- Kubernetes architecture.
+- Security policies.
+- Security findings.
+- Infrastructure configuration.
+- Operational procedures.
+
+Documentation will be updated as new features, technologies, and deployment environments are introduced.
+
+Changes should be reviewed and version-controlled through GitHub pull requests.
+
+## 15. Current Project Status
+
+**Current Phase:** Phase 6 — Terraform and Infrastructure as Code
+
+**Completed:** FastAPI foundation, Docker, automated testing, security scanning, GitHub Actions, and local Kubernetes deployment.
+
+**In Progress:** Terraform installation, configuration, and infrastructure provisioning exercises.
+
+**Next Major Milestone:** Prepare repeatable infrastructure configurations for future cloud deployment.
+
+**Long-Term Goal:** Deliver a secure, publicly accessible web application that helps Washington, D.C. tennis players find courts, coordinate matches, and play more often.
