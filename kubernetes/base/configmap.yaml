@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: dc-tennis-config
+  labels:
+    app: dc-tennis-api
+
+data:
+  APP_NAME: "DC Tennis Connect"
+  APP_ENV: "development"
+  LOG_LEVEL: "info"
+  DEFAULT_TIMEZONE: "America/New_York"

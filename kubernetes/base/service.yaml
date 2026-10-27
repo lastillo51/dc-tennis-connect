@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: dc-tennis-api
+  labels:
+    app: dc-tennis-api
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: dc-tennis-api
+
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
