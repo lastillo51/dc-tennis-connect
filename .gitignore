@@ -21,12 +21,25 @@ venv/
 Thumbs.db
 
 # Terraform
-.terraform/
+**/.terraform/
 *.tfstate
 *.tfstate.*
 *.tfplan
 crash.log
 crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local Terraform variable values
+*.tfvars
+*.tfvars.json
+
+# Terraform-generated local exercise output
+terraform/environments/local/dc-tennis-project-info.txt
+
+# Keep .terraform.lock.hcl tracked for reproducible builds
 
 # Logs and temporary files
 *.log

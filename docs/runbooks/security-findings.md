@@ -1,39 +1,40 @@
 # DC Tennis Connect — Security Findings Register
 
-> **Document purpose:** Living record of security scan results, finding investigations, remediation evidence, residual risks, and follow-up decisions.  
-> **Project stage:** Phase 4 — Security scanning and CI/CD  
-> **Last recorded scan date:** 2026-10-25  
-> **Status:** Local development only; not approved for public deployment.
+> **Purpose:** Living record of security scans, investigations, remediation evidence, residual risks, and follow-up decisions.  
+> **Current project stage:** Phase 6 — Terraform and Infrastructure as Code  
+> **Latest dated scan in this register:** 2026-10-25 (Terraform scan date not yet recorded)  
+> **Deployment status:** Local development only; not approved for public deployment.
 
 ## 1. Current Security Overview
 
-This section is the starting point for each review. Update it when new evidence changes the project's security status; retain older scan results in the history below.
+Update this summary when new evidence is verified. Preserve historical results in Section 2 and the scan history in Section 7.
 
-| Area | Latest documented evidence | Current assessment |
+| Area | Recorded evidence | Assessment |
 |---|---|---|
-| Automated application tests | 16 Pytest tests passed | Passing in recorded verification |
-| Dependency consistency | `python -m pip check` passed | Passing in recorded verification |
-| Semgrep | 0 findings with `p/security-audit` on 2026-10-25 | No findings in that scan; coverage is limited |
-| Trivy targeted High/Critical rescan | 0 findings reported after packaging-tool removal | Result recorded; requires comparison with full baseline |
-| Trivy full-severity baseline | 164 findings, including 44 High | High findings remain outstanding for assessment |
-| GitHub Actions | Pytest, Semgrep, and Trivy jobs reported successful | CI operational; scanner success does not imply zero vulnerabilities |
-| Post-remediation container runtime test | No explicit verification evidence in this register | Verification not yet recorded |
-| Docker image-layer exposure | Packaging tools removed in a later image layer | Residual risk remains under investigation |
+| Application tests | 16 Pytest tests passed | Passing at recorded verification |
+| Dependency consistency | `python -m pip check` passed | Passing at recorded verification |
+| Semgrep application scan | 0 findings on 2026-10-25 using `p/security-audit` | No findings under that scan's coverage |
+| Trivy targeted image rescan | 0 High/Critical findings after packaging-tool removal | Must be reconciled with full image baseline |
+| Trivy full image baseline | 164 findings, including 44 High | High findings remain outstanding for assessment |
+| Trivy Terraform IaC scan | 0 findings recorded; date and scanner version missing | Reported zero; evidence metadata incomplete |
+| GitHub Actions | Python, Semgrep, and container Trivy jobs reported successful | Existing CI operational; Terraform job not yet verified in this register |
+| Post-remediation container runtime | No explicit evidence linked in this register | Evidence not yet recorded |
+| Container image layers | Packaging tools uninstalled in a later layer | Residual exposure needs assessment |
 
-**Interpretation:** The zero-High targeted result and the 44-High full baseline are separate observations. The supplied record does not establish that they used the same image, database snapshot, or scan configuration. Do not describe the full image as free of High vulnerabilities.
+**Do not combine scan results without matching the target image/configuration, scanner version, vulnerability database, scan date, and options.** In particular, the targeted zero-High result does not invalidate the 44-High full image baseline.
 
-## 2. Scan Inventory and Results
+## 2. Security Scan Baselines
 
-### 2.1 Trivy — Full Image Baseline
+### 2.1 Trivy — Full Container Image Baseline
 
-| Attribute | Recorded value |
+| Field | Recorded value |
 |---|---|
 | Scanner | Trivy 0.76.1 |
-| Scan date | 2026-10-25 |
-| Target | `dc-tennis-connect:dev` |
+| Date | 2026-10-25 |
+| Image | `dc-tennis-connect:dev` |
 | Image ID | `sha256:364ca4eccae0b416dcd6ac2f10025acb9dd2f7554527ff07b7a2cdff96ca2d4a` |
-| Severity scope | UNKNOWN, LOW, MEDIUM, HIGH, CRITICAL |
-| Detailed report | `~/trivy-lab/trivy-results.json` — local only, not committed |
+| Scope | UNKNOWN, LOW, MEDIUM, HIGH, CRITICAL |
+| Detailed report | `~/trivy-lab/trivy-results.json` (local only) |
 
 | Severity | Findings |
 |---|---:|
@@ -44,27 +45,27 @@ This section is the starting point for each review. Update it when new evidence 
 | Unknown | 1 |
 | **Total** | **164** |
 
-These are scanner-reported findings, not necessarily unique packages or confirmed exploitable vulnerabilities. This baseline is **not** a clean security result.
+These are scanner findings, not necessarily unique packages or confirmed exploitable vulnerabilities. This is **not** a clean security baseline.
 
-### 2.2 Trivy — Targeted High/Critical Scans
+### 2.2 Trivy — Targeted Container Image Scans
 
-| Scan | Reported High/Critical findings | Notes |
+| Scan | High/Critical findings | Notes |
 |---|---:|---|
-| Initial targeted scan | 4 | Four Python packaging-related advisories identified |
-| Post-remediation targeted scan | 0 | Findings no longer reported after Dockerfile change |
+| Before packaging-tool remediation | 4 | Four packaging-related advisories |
+| After packaging-tool remediation | 0 | Previously reported advisories no longer detected |
 
-**Open reconciliation:** The scan records do not yet establish equivalent image IDs, Trivy databases, dates, and settings. Treat the 44 High findings in the full baseline as outstanding until investigated.
+**Open discrepancy:** Equivalent image identity, scan date, scanner/database versions, and flags have not been established for comparison with Section 2.1. The 44 High findings remain outstanding.
 
-### 2.3 Semgrep — Python Source Scan
+### 2.3 Semgrep — Application Source Baseline
 
-| Attribute | Recorded value |
+| Field | Recorded value |
 |---|---|
 | Scanner | Semgrep CLI 1.182.1 |
-| Scan date | 2026-10-25 |
+| Date | 2026-10-25 |
 | Target | `app/` |
 | Ruleset | `p/security-audit` |
 | Branch | `security/initial-scanning` |
-| Detailed report | `~/semgrep-lab/semgrep-results.json` — local only, not committed |
+| Detailed report | `~/semgrep-lab/semgrep-results.json` (local only) |
 
 | Severity | Findings |
 |---|---:|
@@ -74,144 +75,186 @@ These are scanner-reported findings, not necessarily unique packages or confirme
 | Unknown | 0 |
 | **Total** | **0** |
 
-No findings were reported by this ruleset on this scan. This does not guarantee that the application is free of security weaknesses, including authorization or business-logic flaws.
+No findings were reported under this ruleset at that time. This does not establish that the application has no security weaknesses.
 
-## 3. Individual Finding Register
+### 2.4 Trivy — Terraform IaC Baseline (Phase 6)
 
-Use one row per actionable advisory or configuration issue. Keep historical findings even after remediation, with evidence supporting status changes.
+| Field | Recorded value |
+|---|---|
+| Scanner | Trivy configuration scanner |
+| Scan type | Infrastructure as Code / misconfiguration |
+| Target | `terraform/` |
+| Date | **Not recorded — add actual scan date** |
+| Trivy version | **Not recorded — add installed version** |
+| Branch | `infra/terraform-foundation` |
+| Detailed report | `~/trivy-lab/terraform-config-results.json` (local only) |
+| Command | `trivy config --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL terraform/` |
 
-| ID | Component | Advisory | Detected version | Reported fix | Status |
+| Severity | Recorded findings |
+|---|---:|
+| Critical | 0 |
+| High | 0 |
+| Medium | 0 |
+| Low | 0 |
+| Unknown | 0 |
+| **Total** | **0** |
+
+The supplied document records zero Terraform misconfigurations. **Confirm the command completed successfully and fill in the scan date/version before treating this as a fully evidenced baseline.** Zero findings do not guarantee secure infrastructure, and the current configuration manages only local demonstration resources.
+
+## 3. Individual Security Findings
+
+Keep one row per actionable advisory or configuration issue. Preserve closed findings for traceability.
+
+| ID | Component | Advisory | Detected version | Reported fix | Current status |
 |---|---|---|---|---|---|
-| SEC-001 | `msgpack` | GHSA-6v7p-g79w-8964 | 1.1.2 | 1.2.1 | Investigating — absent in targeted rescan |
-| SEC-002 | `setuptools` | CVE-2025-47273 | 70.3.0 | 78.1.1 | Investigating — source not confirmed |
-| SEC-003 | `urllib3` | CVE-2026-97687 | 2.7.0 | 2.8.0 | Investigating — absent in targeted rescan |
-| SEC-004 | `urllib3` | CVE-2026-97689 | 2.7.0 | 2.8.0 | Investigating — absent in targeted rescan |
+| SEC-001 | `msgpack` | GHSA-6v7p-g79w-8964 | 1.1.2 | 1.2.1 | Investigating — absent from targeted rescan |
+| SEC-002 | `setuptools` | CVE-2025-47273 | 70.3.0 | 78.1.1 | Investigating — source unconfirmed |
+| SEC-003 | `urllib3` | CVE-2026-97687 | 2.7.0 | 2.8.0 | Investigating — absent from targeted rescan |
+| SEC-004 | `urllib3` | CVE-2026-97689 | 2.7.0 | 2.8.0 | Investigating — absent from targeted rescan |
 
-### 3.1 Investigation and Remediation History
+### 3.1 Investigation and Remediation Evidence
 
-**Observed origin:** `msgpack` 1.1.2 and `urllib3` 2.7.0 were found in `pip` 26.2.2 under `pip/_vendor`. They were not independently listed by `pip list` or `importlib.metadata`. `setuptools` was not found in the searched runtime directories; its detection source remains unconfirmed.
+- **Observed origin:** `msgpack` 1.1.2 and `urllib3` 2.7.0 were found bundled with `pip` 26.2.2 under `pip/_vendor`, rather than listed as separate packages by `pip list` or `importlib.metadata`.
+- **Unconfirmed origin:** `setuptools` was not found in the searched runtime directories.
+- **Change:** Dockerfile updated to uninstall Python packaging tools after installing application dependencies. Image rebuilt, exported, and rescanned.
+- **Recorded checks:** Targeted High/Critical rescan reported zero; 16 Pytest tests passed; `python -m pip check` reported no broken requirements.
+- **Residual risk:** Files from removed packaging tools may remain in earlier image layers. Evaluate a multi-stage build and rescan the distributed image.
 
-**Change made:** The Dockerfile was updated to uninstall Python packaging tools after dependency installation. The image was rebuilt, exported, and rescanned.
-
-**Recorded verification:** The targeted High/Critical rescan no longer reported SEC-001 through SEC-004; 16 Pytest tests passed, and `python -m pip check` reported no broken requirements. A post-remediation container runtime test is not explicitly recorded in the supplied document.
-
-**Residual risk:** Removing packaging tools in a later Docker layer can leave their bytes in earlier layers. Evaluate a multi-stage build with a minimal runtime stage, then rebuild and rescan. Do not mark SEC-001 through SEC-004 fully resolved until the full-baseline discrepancy and residual risk are addressed or explicitly assessed and accepted.
+Do not mark SEC-001 through SEC-004 fully resolved until the image-baseline discrepancy and remaining exposure are investigated or explicitly assessed and accepted.
 
 ### 3.2 Finding Status Definitions
 
 | Status | Meaning |
 |---|---|
-| Open | Detected; initial assessment pending |
-| Investigating | Applicability, exposure, or origin being evaluated |
-| Remediation Planned | Fix identified but not yet applied |
-| Resolved | Fix implemented and verified with evidence |
-| Risk Accepted | Residual risk accepted with rationale, reviewer, and review date |
-| False Positive | Evidence shows finding does not apply |
+| Open | Identified; assessment pending |
+| Investigating | Origin, applicability, or exposure being evaluated |
+| Remediation Planned | Corrective action identified but not complete |
+| Resolved | Remediation implemented and verified with evidence |
+| Risk Accepted | Documented acceptance with rationale, reviewer, and review date |
+| False Positive | Evidence demonstrates that the finding does not apply |
 
-## 4. GitHub Actions CI Baseline
+## 4. GitHub Actions Security CI
 
-| Attribute | Recorded value |
+### 4.1 Recorded Phase 4 Baseline
+
+| Field | Recorded value |
 |---|---|
 | Workflow | DC Tennis Connect Security CI |
-| Workflow file | `.github/workflows/security-ci.yml` |
+| File | `.github/workflows/security-ci.yml` |
 | Branch at initial successful run | `security/initial-scanning` |
 | Initial successful execution date | 2026-10-25 |
 | Workflow page | https://github.com/lastillo51/dc-tennis-connect/actions/workflows/security-ci.yml |
-| Recorded commit SHA | `c602d7734ad14c4bf737aadd02ce64e1110b4d63` |
-| Specific successful run URL | Not recorded; add the individual run URL when available |
+| Recorded commit | `c602d7734ad14c4bf737aadd02ce64e1110b4d63` |
+| Specific successful run URL | Not recorded |
 
-The workflow-page URL above identifies the workflow, **not a particular run**. The recorded commit SHA has not been independently matched to a run in this document.
+The workflow page is not an individual run. The commit has not been independently matched to a specific run in this register.
 
-| Check | Recorded execution | Enforcement as documented |
+| Check | Recorded result | Enforcement |
 |---|---|---|
-| Pytest | Passed | Test failures fail the job |
-| Dependency consistency | Passed | `pip check` failures fail the job |
-| Semgrep | Passed | `ERROR` findings configured to fail the scan job in the hardened workflow |
-| Trivy | Passed | Vulnerability findings report-only; execution failures should fail the job |
+| Pytest | Passed | Test failures fail job |
+| Dependency consistency | Passed | `pip check` failures fail job |
+| Semgrep | Passed | Configured `ERROR` findings fail job |
+| Trivy container image | Passed | Findings report-only; scanner execution failures should fail job |
 
-**Controls implemented:** Separate CI jobs; automated push and pull-request checks; read-only repository token permissions; Docker image build on GitHub-hosted runner; Trivy installation through the Ubuntu package repository; and documented workflow timeouts and concurrency controls.
+Implemented controls include separate jobs, push/PR checks, read-only repository token permissions, job timeouts, concurrency controls, and image builds on GitHub-hosted runners.
 
-**Limitations:** Scanner results may vary with tool versions, rules, vulnerability databases, and image contents. A successful CI run does not demonstrate zero vulnerabilities. GitHub Actions references are not yet documented as pinned to verified commit SHAs. Branch protection is deferred for this solo development project.
+### 4.2 Phase 6 Terraform CI — Planned / Pending Verification
+
+| Check | Intended enforcement | Verification status |
+|---|---|---|
+| Terraform formatting | Fail on formatting errors | Pending CI evidence |
+| Terraform initialization | Fail on initialization errors | Pending CI evidence |
+| Terraform validation | Fail on invalid configuration | Pending CI evidence |
+| Trivy IaC scan | Report misconfigurations; scanner errors fail job | Pending CI evidence |
+
+After the Terraform CI job runs, record its run URL, commit SHA, tool versions, outcome, and any differences from the local IaC scan. Do not mark this job implemented and verified solely because it is described here.
+
+### 4.3 CI Limitations
+
+- Passing security jobs does not prove the absence of vulnerabilities.
+- Scanner results may vary by tool version, rules, databases, and target contents.
+- GitHub Actions dependencies are not yet documented as pinned to verified commit SHAs.
+- Branch protection is deferred for solo development; PR checks are reviewed manually.
+- Trivy vulnerability and IaC misconfiguration findings are currently planned to remain report-only until risk-based gates are defined.
 
 ## 5. Risk Decisions and Prioritization
 
-| Severity | Current handling |
+| Severity | Handling |
 |---|---|
-| Critical | Investigate promptly; assess whether work or deployment should be blocked |
-| High | Prioritize applicability, exposure, and available fixes; do not silently accept |
-| Medium | Track and schedule remediation; escalate exposed or actively exploited issues |
-| Low | Review during routine dependency and image maintenance |
-| Unknown | Investigate advisory context and classify where possible |
+| Critical | Investigate promptly; assess blocking work or deployment |
+| High | Prioritize exposure, applicability, and available fixes |
+| Medium | Track and schedule remediation; escalate exposed issues |
+| Low | Review during routine maintenance |
+| Unknown | Investigate context and classify where possible |
 
-**Current decisions:**
+**Current decisions:** Continue local development, but do not approve public deployment based on current evidence. Keep container-image Trivy findings report-only until the baseline is reconciled. Treat 44 High findings as outstanding for triage. Defer branch protection while manually reviewing CI results.
 
-- Continue local development and DevSecOps learning; the application is not approved for public deployment.
-- Keep Trivy vulnerability findings report-only in CI until the baseline is reconciled and a risk-based enforcement policy is established.
-- Treat the recorded 44 High findings as outstanding and untriaged for planning purposes.
-- Defer branch protection for now; review CI checks manually before merging.
-- Do not interpret a zero-finding Semgrep scan or successful Trivy job as proof of complete security.
-
-Deferral is not remediation or formal risk acceptance. Any risk acceptance must record the affected finding, rationale, compensating controls, accountable reviewer, and reassessment date.
+Deferral is **not** remediation or formal risk acceptance. A formal exception must identify the finding, justification, compensating controls, accountable reviewer, and reassessment date.
 
 ## 6. Open Actions Tracker
 
-Update this table as work progresses. Use a GitHub issue or pull request link when one is created.
-
-| ID | Action | Priority | Status | Evidence / completion condition |
+| ID | Action | Priority | Status | Completion evidence |
 |---|---|---|---|---|
-| ACT-001 | Reconcile targeted and full Trivy results | High | Open | Compare image ID, scan time, Trivy version, database, and flags |
-| ACT-002 | Triage 44 High findings from full baseline | High | Open | Record applicability, available fixes, and decisions |
-| ACT-003 | Verify post-remediation container runtime | Medium | Evidence pending | Confirm startup, non-root user, health and court endpoints |
-| ACT-004 | Evaluate multi-stage runtime image | Medium | Planned | Rebuild and rescan; document image-layer exposure |
-| ACT-005 | Capture exact successful GitHub Actions run URL | Low | Open | Link to run and associated commit |
-| ACT-006 | Review and pin GitHub Actions dependencies | Medium | Planned | Verified full commit SHA references |
-| ACT-007 | Establish risk-based Trivy merge gate | Medium | Deferred | Approved baseline and enforcement criteria |
-| ACT-008 | Review Medium, Low, and Unknown findings | Routine | Planned | Reassessment during dependency maintenance |
+| ACT-001 | Reconcile targeted and full Trivy image scans | High | Open | Compare image IDs, dates, versions, databases, flags |
+| ACT-002 | Triage 44 High image findings | High | Open | Record applicability, fixes, and decisions |
+| ACT-003 | Link post-remediation runtime verification | Medium | Evidence pending | Startup, non-root execution, health/court endpoints |
+| ACT-004 | Evaluate multi-stage runtime image | Medium | Planned | Rebuild, rescan, assess image layers |
+| ACT-005 | Record exact successful Phase 4 CI run | Low | Open | Run URL and associated commit |
+| ACT-006 | Pin GitHub Actions dependencies | Medium | Planned | Verified full commit SHA references |
+| ACT-007 | Establish risk-based container Trivy gate | Medium | Deferred | Reviewed baseline and enforcement policy |
+| ACT-008 | Review Medium, Low, and Unknown image findings | Routine | Planned | Scheduled reassessment |
+| ACT-009 | Complete Terraform IaC scan metadata | Low | Open | Actual date, version, successful scan evidence |
+| ACT-010 | Verify Terraform CI job | Medium | Pending | Run URL, commit, formatting/validation/scan results |
+| ACT-011 | Define IaC misconfiguration enforcement | Medium | Planned | Risk-based policy and thresholds |
+| ACT-012 | Expand IaC controls for cloud deployment | Future | Planned | Cloud-specific security review and scan evidence |
 
-## 7. Repeatable Process for Future Scans
-
-1. Record the date, Git commit, image ID or digest, scanner version, ruleset/database information, and command used.
-2. Save detailed machine-readable reports outside Git unless sanitized and intentionally approved for inclusion.
-3. Add a new scan entry to the history table below; **do not overwrite earlier results**.
-4. Update the current overview and counts only after identifying which scan is authoritative for the intended target.
-5. Create or update individual finding rows for issues requiring investigation, remediation, or acceptance.
-6. Run appropriate application and container verification after changes; record evidence.
-7. Update the actions tracker, then review the Markdown diff before committing.
+## 7. Scan History and Repeatable Workflow
 
 ### 7.1 Scan History
 
-| Date | Scanner / scope | Target or commit | Critical | High | Medium | Low | Unknown | Evidence / notes |
+Append new rows; do not overwrite older results. A dash means not applicable or not recorded, **not zero**.
+
+| Date | Scanner / scope | Target | Critical | High | Medium | Low | Unknown | Notes |
 |---|---|---|---:|---:|---:|---:|---:|---|
-| 2026-10-25 | Trivy full severity | `dc-tennis-connect:dev` (image ID in §2.1) | 0 | 44 | 58 | 61 | 1 | Local JSON report |
-| Not recorded | Trivy targeted before remediation | Image identity not recorded | Not separated | 4 combined High/Critical | — | — | — | Initial targeted scan |
-| Not recorded | Trivy targeted after remediation | Image identity not recorded | 0 combined | 0 combined | — | — | — | Targeted rescan; requires reconciliation |
-| 2026-10-25 | Semgrep `p/security-audit` | `app/` | — | — | — | — | — | 0 total findings; see §2.3 |
+| 2026-10-25 | Trivy image, full severity | `dc-tennis-connect:dev` | 0 | 44 | 58 | 61 | 1 | Image ID and report in §2.1 |
+| Not recorded | Trivy image, targeted pre-remediation | Image not recorded | — | — | — | — | — | 4 combined High/Critical |
+| Not recorded | Trivy image, targeted post-remediation | Image not recorded | — | — | — | — | — | 0 combined High/Critical |
+| 2026-10-25 | Semgrep `p/security-audit` | `app/` | — | — | — | — | — | 0 total findings; §2.3 |
+| Not recorded | Trivy Terraform IaC | `terraform/` | 0 | 0 | 0 | 0 | 0 | Reported 0; metadata incomplete; §2.4 |
 
-For new scans, append a row with actual counts and a reference to the corresponding local report. Use `—` when a severity was not scanned or is not applicable; do not substitute zero for unknown values.
+### 7.2 Procedure for Future Scans
 
-### 7.2 New Finding Template
+1. Record date, branch/commit, target image ID or IaC path, scanner version, rule/database information, and exact command.
+2. Save detailed reports outside Git unless sanitized and explicitly approved for inclusion.
+3. Append a new history entry without deleting older observations.
+4. Update the current overview only after checking scan comparability.
+5. Add or update individual findings and remediation evidence.
+6. Record regression tests and runtime verification after changes.
+7. Update open actions and review the Markdown diff before committing.
 
-Copy this subsection for an issue requiring individual tracking:
+### 7.3 New Finding Template
+
+Copy and complete this template for each new actionable issue:
 
 ```markdown
-#### SEC-XXX — Short finding title
+#### SEC-XXX — Finding title
 
 - **Scanner / advisory:**
 - **Component and version:**
 - **First detected:**
 - **Severity / exposure:**
-- **Evidence:**
+- **Evidence / report:**
 - **Status:** Open
 - **Owner / reviewer:**
-- **Remediation or decision:**
+- **Remediation or risk decision:**
 - **Verification:**
 - **Next review date:**
 ```
 
-## 8. Repository Handling and Next Review
+## 8. Repository Handling and Review Triggers
 
-This Markdown register is intended for Git. Keep raw scanner JSON, Docker image archives, local `.env` files, credentials, and other sensitive artifacts outside the repository. Review staged changes before committing.
+This Markdown register is intended for Git. Keep raw scanner JSON, Docker image archives, local `.env` files, Terraform state, private `.tfvars` values, credentials, and other sensitive artifacts outside the repository. Review staged changes before committing.
 
-**Next review trigger:** New Trivy or Semgrep scan; dependency or base-image change; CI policy change; or completion of an open action above.
+**Review this register after:** A new Trivy or Semgrep scan; dependency, base-image, or Terraform change; CI policy change; completion of an open action; or preparation for cloud deployment.
 
-**Project context:** DC Tennis Connect currently runs locally, uses fictional court data, and does not store production player information. That limits current external exposure but does not eliminate development-environment risk or future deployment obligations.
+**Project context:** DC Tennis Connect runs locally, uses fictional court data, and does not currently store production player information. This limits current external exposure but does not eliminate development-environment risk or future deployment obligations.

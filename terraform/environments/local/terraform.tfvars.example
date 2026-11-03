@@ -1,0 +1,8 @@
+# Example Terraform variables for local development.
+# Copy to terraform.tfvars and customize as needed.
+# Do not place credentials in this example file.
+
+project_name        = "DC Tennis Connect"
+environment         = "local"
+project_phase       = "Phase 6 - Terraform"
+enable_project_file = true
