@@ -1,5 +1,9 @@
 # DC Tennis Connect — Project Requirements
 
+**Current development phase:** Phase 7 — Frontend Development  
+**Document scope:** Application-wide requirements and Phase 7 frontend MVP  
+**Status:** Living requirements; implementation status is tracked separately
+
 ## 1. Purpose
 
 DC Tennis Connect will provide a centralized platform for discovering public tennis courts, reviewing publicly available court schedules, coordinating hitting sessions, and finding compatible hitting partners in Washington, D.C.
@@ -19,6 +23,8 @@ DC Tennis Connect will not independently reserve public courts or guarantee real
 - Players unfamiliar with court locations in Washington, D.C.
 
 ## 3. Functional Requirements
+
+Requirements FR-001 through FR-011 describe the broader application. FR-012 through FR-018 define the Phase 7 browser interface and reuse the existing backend where applicable. Requirements for later phases remain planned, not implemented.
 
 ### FR-001: Responsive Web Access
 
@@ -149,6 +155,49 @@ The system shall support:
 
 Automated data retrieval may be introduced after verifying that the relevant source permits it.
 
+### Phase 7 — Frontend Interface Requirements
+
+The following requirements apply to the initial server-rendered frontend using FastAPI and Jinja2. During Phase 7, the interface uses fictional court records; real court data, database persistence, authentication, and player scheduling remain deferred. Existing JSON API routes must remain functional.
+
+### FR-012: Frontend Homepage
+
+The application shall provide a browser-accessible homepage introducing DC Tennis Connect and its court discovery functionality.
+
+### FR-013: Court Directory Interface
+
+The application shall display tennis court information using the existing backend court service layer.
+
+### FR-014: Court Search and Filtering
+
+Users shall be able to search and filter available court records using supported court attributes.
+
+The interface shall not imply that filtering by public access or operating hours guarantees physical court availability.
+
+### FR-015: Court Detail Pages
+
+Users shall be able to view individual court details, including court name, location, available facility information, and relevant scheduling information.
+
+Unavailable or unverified fields shall be clearly identified or omitted as appropriate.
+
+### FR-016: Google Maps Navigation
+
+Court detail pages shall expose the Google Maps directions capability specified by FR-009, reusing the existing backend navigation URL generation functionality rather than implementing a second mapping mechanism. No paid Google Maps API is required for the initial implementation.
+
+### FR-017: Frontend Error Handling
+
+The interface shall provide understandable messages for:
+
+- Missing court records.
+- Empty search results.
+- Invalid user input.
+- Unavailable application data.
+
+### FR-018: Progressive Enhancement
+
+Core court discovery functionality shall remain usable without client-side JavaScript where practical.
+
+JavaScript may enhance interactions without becoming a requirement for basic navigation.
+
 ## 4. Nonfunctional Requirements
 
 ### NFR-001: Security
@@ -204,9 +253,37 @@ Player profiles, match invitations, and availability preferences shall be protec
 
 The application shall minimize the collection and storage of precise user location information.
 
+### Phase 7 — Frontend Nonfunctional Requirements
+
+The following requirements supplement the application-wide requirements above. NFR-011 refines FR-001 for frontend layouts; NFR-013 supplements NFR-001; NFR-014 supplements NFR-002; and NFR-015 supplements NFR-005.
+
+### NFR-011: Responsive Design
+
+The frontend shall adapt its layout and controls to modern desktop and mobile browsers, consistent with FR-001.
+
+### NFR-012: Accessibility
+
+The frontend shall use semantic HTML, keyboard-accessible controls, visible focus indicators, readable text, and appropriately labeled form elements.
+
+WCAG 2.2 Level AA shall be the target for future accessibility verification.
+
+### NFR-013: Frontend Security
+
+The frontend shall escape untrusted content, validate query parameters, and avoid exposing secrets or internal application details.
+
+### NFR-014: Frontend Maintainability
+
+Templates, stylesheets, static assets, and frontend routes shall be organized into separate logical components.
+
+### NFR-015: Frontend Testability
+
+Frontend routes, template rendering, filtering, and error responses shall be supported by automated tests.
+
 ## 5. MVP Scope
 
-The initial technical MVP shall include:
+### 5.1 Broader Application MVP (Planned)
+
+The broader application MVP shall include:
 
 - Responsive web application.
 - Public tennis court directory.
@@ -230,6 +307,23 @@ The next functional iteration will introduce:
 
 Later iterations will introduce notifications, enhanced matching, and automated schedule updates.
 
+### 5.2 Phase 7 Frontend MVP (Current Milestone)
+
+Phase 7 uses the existing fictional court data and does not require real schedules, persistent court records, player accounts, or match scheduling. Scheduling fields shall only be shown when present and clearly identified as sample, verified, or unknown.
+
+The Phase 7 frontend MVP is complete when:
+
+1. The homepage renders successfully.
+2. The court directory displays existing fictional court records.
+3. Search and filtering operate correctly.
+4. Individual court pages display available details.
+5. Google Maps navigation links work.
+6. Missing court records produce an appropriate response.
+7. The interface works at desktop and mobile viewport sizes.
+8. Existing JSON API endpoints remain functional.
+9. Automated frontend and existing backend tests pass.
+10. Docker and Kubernetes deployments remain compatible.
+
 ## 6. Constraints
 
 - Prioritize free and open-source technologies.
@@ -245,6 +339,8 @@ Later iterations will introduce notifications, enhanced matching, and automated 
 - Require explicit approval before introducing paid services.
 
 ## 7. Acceptance Criteria
+
+The criteria below cover the broader application roadmap. Criteria involving real public schedules or player accounts are not prerequisites for Phase 7; Phase 7 completion is governed by Section 5.2.
 
 ### AC-001: Court Discovery
 
@@ -297,5 +393,19 @@ Court discovery, published schedules, and Google Maps navigation work on support
 ### AC-013: Cost Control
 
 Local development operates without requiring paid cloud infrastructure or mapping API subscriptions.
+
+### 7.1 Phase 7 Acceptance Mapping
+
+| Phase 7 deliverable | Requirements | Verification |
+|---|---|---|
+| Homepage | FR-012 | Browser route renders successfully |
+| Directory and filtering | FR-013, FR-014 | Fictional records display; supported filters work; empty results handled |
+| Court detail pages | FR-015 | Existing record renders; missing record handled |
+| Directions | FR-009, FR-016 | Valid Google Maps destination link for supported court data |
+| Error handling | FR-017 | Missing records and invalid inputs produce understandable responses |
+| Progressive enhancement | FR-018 | Core court discovery works without JavaScript where practical |
+| Responsive and accessible interface | FR-001, NFR-011, NFR-012 | Desktop/mobile and keyboard checks |
+| Security and maintainability | NFR-013, NFR-014 | Template and route review; no secrets exposed |
+| Regression and deployment compatibility | NFR-015 | Frontend and existing API tests pass; Docker and kind verified |
 
 Additional acceptance criteria will be defined as implementation progresses.

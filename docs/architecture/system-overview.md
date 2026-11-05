@@ -22,6 +22,51 @@ The responsive web interface will support:
 - Match invitations and scheduling.
 - Google Maps navigation.
 
+### Frontend Implementation Architecture
+
+The initial frontend will use server-rendered HTML templates integrated with the existing FastAPI application.
+
+Frontend technologies:
+
+- Jinja2 for HTML template rendering.
+- HTML5 for semantic page structure.
+- CSS3 for responsive layouts.
+- Minimal JavaScript for progressive enhancement.
+- FastAPI routes for serving frontend pages.
+- FastAPI static file support for CSS, JavaScript, and other approved assets.
+
+Frontend routes will remain logically separate from existing JSON API routes.
+
+The frontend will reuse the established court service layer rather than duplicating court data or making unnecessary HTTP requests to its own API.
+
+The architecture will support future replacement or extension of the frontend without requiring major changes to the court service layer.
+
+### Frontend Responsibilities
+
+The frontend will:
+
+- Render the homepage and court directory.
+- Display court details returned by the service layer.
+- Support court search and filtering.
+- Present court location information.
+- Provide Google Maps navigation links.
+- Clearly distinguish published court information from unknown availability.
+- Display appropriate empty and error states.
+- Support desktop and mobile browser layouts.
+
+### Frontend Boundaries
+
+The initial frontend will not:
+
+- Implement player authentication.
+- Create or manage court reservations.
+- Guarantee physical court availability.
+- Introduce persistent player scheduling.
+- Integrate real public court data.
+- Require paid mapping APIs.
+
+These capabilities will be introduced incrementally as their supporting backend services become available.
+
 ### Backend
 
 Python and FastAPI will provide:
