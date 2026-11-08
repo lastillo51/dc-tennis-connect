@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="directory-header">
+    <div class="container">
+        <p class="eyebrow">Washington, D.C. Tennis</p>
+
+        <h1>Explore tennis courts</h1>
+
+        <p>
+            Browse sample tennis court information
+            and find locations for your next game.
+        </p>
+    </div>
+</section>
+
+<section class="directory-content">
+    <div class="container">
+
+        <form
+            class="court-filters"
+            method="get"
+            action="/web/courts"
+            role="search"
+        >
+            <div class="filter-field">
+                <label for="court-search">
+                    Search courts
+                </label>
+
+                <input
+                    type="search"
+                    id="court-search"
+                    name="q"
+                    value="{{ search_query }}"
+                    maxlength="100"
+                    placeholder="Court name or address"
+                >
+            </div>
+
+            <div class="filter-checkbox">
+                <label>
+                    <input
+                        type="checkbox"
+                        name="public_only"
+                        value="true"
+                        {% if public_only %}checked{% endif %}
+                    >
+                    Public courts only
+                </label>
+            </div>
+
+            <button
+                class="button button-primary"
+                type="submit"
+            >
+                Search
+            </button>
+
+            <a href="/web/courts" class="clear-filters">
+                Clear filters
+            </a>
+        </form>
+
+        <div class="results-heading">
+            <h2>Court listings</h2>
+            <p aria-live="polite">
+                {{ result_count }} {{ "court found" if result_count == 1 else "courts found" }}
+            </p>
+        </div>
+
+        {% if courts %}
+
+        <div class="court-grid">
+            {% for court in courts %}
+
+            <article class="court-card">
+                <div class="court-card-content">
+
+                    <h3>
+                        <a href="/web/courts/{{ court.id }}">
+                            {{ court.name }}
+                        </a>
+                    </h3>
+
+                    <p class="court-address">
+                        {{ court.location.address }}
+                    </p>
+
+                    <p class="court-type">
+                        {% if court.public_access %}
+                            Public court
+                        {% else %}
+                            Access restrictions may apply
+                        {% endif %}
+                    </p>
+
+                    <p class="court-disclaimer">
+                        Listing does not confirm
+                        current court availability.
+                    </p>
+
+                </div>
+            </article>
+
+            {% endfor %}
+        </div>
+
+        {% else %}
+
+        <div class="empty-state" role="status">
+            <h3>No courts found</h3>
+
+            <p>
+                No courts match your current search.
+                Try a different name or remove filters.
+            </p>
+
+            <a href="/web/courts" class="button button-primary">
+                Show all courts
+            </a>
+        </div>
+
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
