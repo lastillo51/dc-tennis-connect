@@ -1,6 +1,7 @@
 # DC Tennis Connect — Project Requirements
 
-**Current development phase:** Phase 7 — Frontend Development  
+**Current development phase:** Phase 7 — Completed  
+**Next development phase:** Phase 8 — PostgreSQL application persistence and real public court data  
 **Document scope:** Application-wide requirements and Phase 7 frontend MVP  
 **Status:** Living requirements; implementation status is tracked separately
 

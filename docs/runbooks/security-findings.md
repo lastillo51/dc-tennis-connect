@@ -1,7 +1,7 @@
 # DC Tennis Connect — Security Findings Register
 
 > **Purpose:** Living record of security scans, investigations, remediation evidence, residual risks, and follow-up decisions.  
-> **Current project stage:** Phase 7 — Frontend Development  
+> **Current project stage:** Phase 7 — Completed; Phase 8 next  
 > **Latest dated scan recorded:** 2026-11-08 (Phase 7 Trivy frontend image); other scan dates remain pending.  
 > **Deployment status:** Local development only; not approved for public deployment.
 
@@ -289,9 +289,9 @@ Implemented controls include separate jobs, push/PR checks, read-only repository
 
 The user reported that all four CI jobs passed during Phase 6. Record the Terraform job run URL, commit SHA, tool versions, and any differences from the local IaC scan to complete the evidence trail. The Phase 7 Semgrep finding requires its own review and subsequent CI verification.
 
-### 4.3 Phase 7 Frontend CI — Verification Pending
+### 4.3 Phase 7 Frontend CI — Merge Completed; Run Evidence Pending
 
-The frontend branch was originally excluded from `push` triggers (`main`, `security/**`, and `infra/**`). A `feature/**` trigger was recommended, but the current register does not establish whether that workflow change was committed or whether a subsequent run passed. Record the run URL, commit SHA, and outcomes for Pytest, Semgrep, Trivy, and Terraform before declaring Phase 7 CI verified.
+The Phase 7 frontend pull request was reported squash-merged into `main`, and the feature branches were deleted. The original workflow excluded `feature/**` from push triggers; adding that pattern was recommended. This register still lacks the exact Phase 7 CI run URL, commit SHA, job outcomes, and confirmation of the committed trigger configuration. Record those details before describing Phase 7 CI as independently verified. The merge does not close `SEC-FE-001` or remediate Trivy findings.
 
 ### 4.4 CI Limitations
 
