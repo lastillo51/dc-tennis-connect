@@ -1,8 +1,15 @@
-
 from fastapi import FastAPI
 
 from app.api.routes.courts import router as courts_router
 
+from pathlib import Path
+
+from fastapi.staticfiles import StaticFiles
+
+from app.web.routes import router as web_router
+
+
+BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
     title="DC Tennis Connect",
@@ -11,8 +18,14 @@ app = FastAPI(
 )
 
 
-app.include_router(courts_router)
+app.mount(
+    "/static",
+    StaticFiles(directory=str(BASE_DIR / "static")),
+    name="static",
+)
 
+app.include_router(courts_router)
+app.include_router(web_router)
 
 @app.get("/")
 def read_root():

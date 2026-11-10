@@ -1,0 +1,486 @@
+:root {
+    --color-primary: #176b52;
+    --color-primary-dark: #10503d;
+    --color-background: #f8faf9;
+    --color-surface: #ffffff;
+    --color-text: #172b24;
+    --color-muted: #52665d;
+    --color-border: #dce7e1;
+
+    --content-width: 1100px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.6;
+    color: var(--color-text);
+    background: var(--color-background);
+}
+
+.container {
+    width: min(100% - 2rem, var(--content-width));
+    margin-inline: auto;
+}
+
+.site-header {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1rem;
+}
+
+.brand {
+    color: var(--color-primary);
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+nav a {
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+a:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.hero {
+    padding: 5rem 0;
+    background: #e9f4ee;
+}
+
+.eyebrow {
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.hero h1 {
+    max-width: 700px;
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.15;
+}
+
+.hero-description {
+    max-width: 620px;
+    font-size: 1.15rem;
+}
+
+.hero-actions {
+    margin-top: 2rem;
+}
+
+.button {
+    display: inline-block;
+    padding: 0.8rem 1.4rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.button-primary {
+    color: #ffffff;
+    background: var(--color-primary);
+}
+
+.button-primary:hover {
+    background: var(--color-primary-dark);
+}
+
+.features {
+    padding: 4rem 0;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.feature-card {
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.notice {
+    padding: 2rem 0;
+    background: #f0f5f2;
+}
+
+.site-footer {
+    padding: 2rem 0;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-muted);
+}
+
+@media (max-width: 700px) {
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hero {
+        padding: 3rem 0;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Court directory */
+
+.directory-header {
+    padding: 3rem 0;
+    background: #e9f4ee;
+}
+
+.directory-header h1 {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.directory-content {
+    padding: 3rem 0;
+}
+
+.court-filters {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.filter-field {
+    display: flex;
+    flex: 1 1 250px;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.filter-field label {
+    font-weight: 700;
+}
+
+.filter-field input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    font: inherit;
+}
+
+.filter-checkbox {
+    padding-bottom: 0.75rem;
+}
+
+.filter-checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.court-filters button {
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.clear-filters {
+    padding: 0.75rem;
+    color: var(--color-primary-dark);
+}
+
+.results-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.results-heading h2 {
+    margin: 0;
+}
+
+.court-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.court-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.court-card-content {
+    padding: 1.5rem;
+}
+
+.court-card h3 {
+    margin-top: 0;
+    color: var(--color-primary-dark);
+}
+
+.court-address {
+    color: var(--color-muted);
+}
+
+.court-type {
+    font-weight: 700;
+}
+
+.court-disclaimer {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.empty-state {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.empty-state .button {
+    margin-top: 1rem;
+}
+
+@media (max-width: 700px) {
+    .court-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .court-filters {
+        align-items: stretch;
+    }
+
+    .court-filters button {
+        width: 100%;
+    }
+}
+
+
+/* ==========================================
+   Phase 7 — Court Detail Pages
+   ========================================== */
+
+.court-detail {
+    padding: 3rem 0;
+}
+
+/* Breadcrumb navigation */
+
+.court-detail nav[aria-label="Breadcrumb"] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.court-detail nav[aria-label="Breadcrumb"] a {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Court heading */
+
+.court-detail-header {
+    margin: 2rem 0;
+}
+
+.court-detail-header h1 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.2;
+}
+
+.court-detail-header p {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+/* Information cards */
+
+.court-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.court-detail-card {
+    min-width: 0;
+    padding: 1.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+}
+
+.court-detail-card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.3rem;
+}
+
+/* Court attributes */
+
+.court-detail-card dl {
+    margin: 0;
+}
+
+.court-detail-card dt {
+    margin-top: 1rem;
+    font-weight: 700;
+}
+
+.court-detail-card dt:first-child {
+    margin-top: 0;
+}
+
+.court-detail-card dd {
+    margin: 0.25rem 0 0;
+    color: var(--color-muted);
+}
+
+/* Google Maps directions */
+
+.court-detail-card .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.court-detail-card p {
+    overflow-wrap: anywhere;
+}
+
+/* Availability notice */
+
+.court-availability-notice {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--color-primary);
+    border-radius: 0.25rem;
+    background: #e9f4ee;
+}
+
+.court-availability-notice h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.court-availability-notice p {
+    margin-bottom: 0;
+}
+
+/* Court detail links */
+
+.court-detail a:not(.button) {
+    color: var(--color-primary-dark);
+}
+
+.court-detail a:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 4px;
+}
+
+/* Mobile responsive layout */
+
+@media (max-width: 700px) {
+    .court-detail {
+        padding: 2rem 0;
+    }
+
+    .court-detail-header {
+        margin: 1.5rem 0;
+    }
+
+    .court-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .court-detail-card {
+        padding: 1.25rem;
+    }
+
+    .court-detail-card .button {
+        width: 100%;
+    }
+
+    .court-availability-notice {
+        padding: 1.25rem;
+    }
+}
+
+/* Accessibility — Skip navigation */
+
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    z-index: 1000;
+    padding: 0.75rem 1rem;
+    background: var(--color-primary-dark);
+    color: #ffffff;
+    border-radius: 0.5rem;
+}
+
+.skip-link:focus {
+    top: 1rem;
+}
+
+/* Accessibility — Focus indicators */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.court-card,
+.court-detail-card {
+    min-width: 0;
+}
+
+.court-card h3,
+.court-detail-header h1,
+.court-address {
+    overflow-wrap: anywhere;
+}

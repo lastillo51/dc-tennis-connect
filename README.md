@@ -2,230 +2,189 @@
 
 **A Washington, D.C. tennis court discovery and player coordination platform — built as a hands-on DevSecOps learning project.**
 
-**Current Development Phase:** Phase 7 — Frontend Development
-
-**Project Status:** Active Development
-
-**Current Focus:** Building a responsive web interface for the existing FastAPI court directory.
+**Current development phase:** Phase 7 — Frontend Development  
+**Current milestone:** Exercise 5 — Frontend quality, accessibility, security hardening, deployment compatibility, and documentation  
+**Project status:** Active development; Phase 7 not yet merged into `main`  
+**Deployment status:** Local development and local kind Kubernetes; not approved for public deployment
 
 ## 1. Project Overview
 
-DC Tennis Connect is a web-based application designed to help tennis players in Washington, D.C. discover public tennis courts, review published court scheduling information, coordinate hitting sessions, and obtain directions using Google Maps.
+DC Tennis Connect aims to help players discover public tennis courts in Washington, D.C., review published operating and reservation information, find hitting partners, coordinate matches, and obtain Google Maps directions.
 
-The application will use reliable, publicly available court information to help players identify potential playing times.
+The **current application uses three fictional court records** for development and testing. Its frontend and JSON API are functional, but real public court data, player coordination, and official scheduling integrations have not yet been implemented.
 
-Players will eventually be able to organize matches around published operating hours, reservation information, and known court restrictions.
-
-**Important:** DC Tennis Connect does not independently reserve public courts or guarantee that a court is physically unoccupied.
+**Availability disclaimer:** DC Tennis Connect does not reserve public courts, report verified real-time occupancy, or guarantee that a court is physically unoccupied.
 
 ### Project Goals
 
-**Application Goal**
-
-Simplify tennis planning by combining public court discovery, published scheduling information, player matching, match coordination, and navigation.
-
-**Learning Goal**
-
-Gain practical experience implementing DevSecOps technologies throughout the software development lifecycle, including containerization, security scanning, CI/CD, Kubernetes, and infrastructure automation.
+- **Application:** Simplify tennis planning through court discovery, trustworthy published information, navigation, and future player coordination.
+- **Learning:** Build practical DevSecOps skills across source control, testing, containers, security scanning, CI/CD, Kubernetes, and infrastructure as code.
 
 ## 2. Current Implementation
 
-The project currently provides a working FastAPI backend and a local DevSecOps development environment.
+### Implemented and tested
 
-### Implemented
+- Python FastAPI backend, modular JSON API, and health endpoint.
+- In-memory fictional court dataset with a shared service layer and Pydantic models.
+- Case-insensitive court-name and address search, public-access filtering, and validated query parameters.
+- Server-rendered Jinja2 homepage, court directory, and individual court detail pages.
+- Court details including address, number of courts, access classification, reservation requirement, and operating hours when present.
+- Google Maps directions generated from court locations through the existing Maps service, without a paid Maps API key.
+- Responsive CSS, semantic HTML, keyboard navigation, and accessibility-oriented tests and improvements.
+- Pytest backend, frontend, API, and Maps-service regression coverage.
+- Docker/Docker Compose development environment, including a local PostgreSQL container with persistent storage.
+- Local Kubernetes deployment using kind, with a Deployment, ClusterIP Service, ConfigMap, health probes, resource limits, and container security contexts.
+- Terraform local infrastructure-as-code foundation and CI validation.
+- GitHub Actions workflows, Semgrep static analysis, and Trivy image/IaC scanning.
 
-- Python FastAPI backend with modular API routing.
-- Sample tennis court directory using fictional court records.
-- Court filtering and request validation.
-- Google Maps destination URL generation.
-- Health-check endpoint.
-- Automated application tests using Pytest.
-- Docker containerization and Docker Compose configuration.
-- Local PostgreSQL container with persistent storage.
-- Trivy container vulnerability scanning.
-- Semgrep static application security scanning.
-- GitHub Actions CI workflow for testing and security checks.
-- Local Kubernetes deployment using kind.
-- Kubernetes Deployment and ClusterIP Service.
-- Kubernetes ConfigMap integration.
-- Kubernetes health probes, resource constraints, and security contexts.
-- Git feature branching and pull request workflows.
+### Planned or incomplete
 
-### Not Yet Implemented
+- Real, authorized Washington, D.C. public court data and source attribution.
+- PostgreSQL persistence for application court and player records (a local PostgreSQL container exists, but application persistence is not integrated).
+- Player registration, authentication, profiles, and skill ratings.
+- Hitting partner matching, invitations, and match scheduling.
+- Email/SMS notifications, real court schedule synchronization, and native mobile applications.
+- Public cloud deployment, HTTPS hosting, production monitoring, and production security approval.
 
-- Responsive end-user web interface.
-- Real Washington, D.C. public tennis court data integration.
-- Database persistence for application records.
-- Player registration and authentication.
-- Player profiles and skill ratings.
-- Hitting partner matching.
-- Match scheduling and invitations.
-- Email and SMS notifications.
-- Public cloud hosting and HTTPS access.
+### Implementation status summary
 
-The current API uses fictional sample data for development and testing.
-
-### Implementation Status Summary
-
-The following table summarizes the current implementation status of the application's core components.
-
-| Component | Status |
+| Component | Current status |
 |---|---|
-| FastAPI backend and JSON API | Implemented |
-| Court directory service layer | Implemented |
-| Fictional court data | Implemented |
-| Court filtering and request validation | Implemented |
-| Google Maps URL generation | Implemented |
-| Automated backend testing | Implemented — 16 passing tests |
-| Docker and Docker Compose | Implemented |
-| Local Kubernetes deployment | Implemented |
-| Terraform infrastructure foundation | Implemented — Phase 6 completed |
-| Jinja2 templates | Planned — Phase 7 |
-| Frontend routes | Planned — Phase 7 |
-| Responsive CSS | Planned — Phase 7 |
-| Court directory web interface | Planned — Phase 7 |
-| PostgreSQL application persistence | Planned — Phase 8 |
-| Real public court data integration | Planned — Phase 8 |
-| Player authentication and profiles | Planned — Phase 9 |
-| Player matching and scheduling | Planned — Phase 9 |
+| FastAPI JSON API and court service | Implemented |
+| Fictional court data and validation | Implemented |
+| Jinja2 homepage, directory, and detail pages | Implemented on Phase 7 feature branch |
+| Search and public-only filtering | Implemented |
+| Google Maps directions | Implemented using existing URL-generation service |
+| Responsive CSS and basic accessibility improvements | Implemented; continued review in Phase 7 |
+| Automated regression tests | Passing at reported checkpoints; rerun before merge |
+| Docker and local kind deployment | Implemented; frontend compatibility verified during Phase 7 exercises |
+| Terraform local foundation | Phase 6 completed |
+| Real public court data and application persistence | Planned — Phase 8 |
+| Player accounts, matching, and scheduling | Planned — Phase 9 |
 | Public cloud deployment | Planned — Phase 10 |
-
-*Implementation status will be updated as features are completed and verified.*
 
 ## 3. Planned Application Features
 
 ### Must Have
 
-- Responsive web application accessible from desktop and mobile browsers.
-- Public tennis court directory.
-- Court names, addresses, and verified geographic coordinates where available.
-- Published court operating hours.
-- Publicly documented reservations, closures, and restrictions where available.
-- Clearly identified court scheduling information.
-- Google Maps directions.
-- Source attribution for public court information.
+- Responsive browser-based interface (frontend foundation implemented).
+- Public tennis court directory with names, addresses, and verified coordinates where available (fictional-data interface implemented).
+- Published operating hours, known closures, restrictions, and reservation information from authorized sources.
+- Clearly distinguished scheduling and availability classifications.
+- Google Maps directions (implemented for sample courts).
+- Attribution and verification dates for real public court information.
 
 ### Should Have
 
-- Player registration and profiles.
-- Tennis skill ratings.
-- Player availability preferences.
-- Hitting partner matching.
+- Player registration, profiles, and tennis skill ratings.
+- Player availability preferences and hitting partner matching.
 - Match invitations and scheduling.
 - Email and SMS notifications.
 
 ### Could Have
 
-- In-app messaging.
-- Social media integration.
-- Court ratings and reviews.
-- Interactive maps displaying multiple courts.
+- In-app messaging, social integration, court reviews, and interactive multi-court maps.
 
 ### Future Enhancements
 
-- Automated public schedule synchronization.
-- Location-based court search.
-- Distance-based court filtering.
-- Dedicated iOS and Android applications.
+- Authorized automated public schedule synchronization, proximity and distance filters, and native mobile apps.
 
-## 4. How the Application Will Work
+## 4. Current and Planned User Workflows
 
-The planned user workflow is:
+**Available now with fictional data:**
 
-1. A player searches for a public tennis court.
-2. The application displays its location, published operating hours, reservation information, and known restrictions.
-3. The player reviews potential playing times.
-4. The player selects a court, date, and time for a proposed hitting session.
-5. The player invites a compatible hitting partner.
-6. The invited player accepts or declines.
-7. Accepted matches appear in both players' schedules.
-8. Players use Google Maps to navigate to the selected court.
+1. Open the homepage and navigate to the court directory.
+2. Search by court name or address, optionally filtering for public access.
+3. Open a court detail page to review recorded information and availability classification.
+4. Open Google Maps directions for the selected court.
 
-Scheduling a match through DC Tennis Connect does not constitute an official court reservation.
+**Planned after real-data and player features are added:**
 
-Published operating hours do not guarantee that a court is physically unoccupied.
+1. Review attributed, published operating hours, restrictions, closures, and reservation information.
+2. Select a potential court and playing time.
+3. Invite a compatible hitting partner and coordinate a session.
+4. View accepted sessions in player schedules.
+
+A proposed session in DC Tennis Connect will **not** constitute an official court reservation.
 
 ## 5. Court Availability Approach
 
-Court scheduling information will come from reliable, authorized public sources.
+Future court scheduling information will come from reliable, authorized public sources, potentially including DC Department of Parks and Recreation, DC Open Data, official public reservation systems where reuse is permitted, and published facility schedules and closure notices.
 
-Potential sources include:
+The application will distinguish published hours, reservable slots, published reservations, first-come-first-served access, closures, and unknown availability. The initial real-data MVP will use manually verified information. Automated updates require source-permission and reliability review.
 
-- DC Department of Parks and Recreation.
-- DC Open Data.
-- Official court reservation platforms where information is publicly accessible and reuse is permitted.
-- Published facility operating schedules and closure notices.
-
-The application will distinguish between:
-
-- Published operating hours.
-- Verified reservable time slots.
-- Published reservations.
-- First-come, first-served access.
-- Known closures.
-- Unknown availability.
-
-The initial MVP will use manually verified public information.
-
-Automated updates may be introduced after confirming that the relevant sources permit programmatic access.
-
-The application will not represent unverified availability as confirmed.
+The current sample records demonstrate the data model and UI; **they do not represent verified real court availability**.
 
 ## 6. Technology Stack
 
 | Category | Technology | Status |
 |---|---|---|
-| Version Control | Git and GitHub | Implemented |
+| Version control | Git and GitHub | Implemented |
 | Backend | Python and FastAPI | Implemented |
-| Frontend | HTML, CSS, JavaScript, Jinja2 | Planned |
-| Database | PostgreSQL | Local container configured |
+| Frontend | HTML, CSS, Jinja2 | Implemented; no JavaScript framework required currently |
+| Database | PostgreSQL | Local container configured; application persistence planned |
 | Containers | Docker Engine and Docker Compose | Implemented |
-| Infrastructure as Code | Terraform | Implemented — Local foundation |
-| Container Orchestration | Kubernetes and kind | Implemented locally |
-| Container Security | Trivy | Implemented |
-| Static Security Analysis | Semgrep | Implemented |
-| CI/CD | GitHub Actions | Implemented |
+| Infrastructure as Code | Terraform | Local foundation implemented |
+| Orchestration | Kubernetes and kind | Implemented locally |
+| Container and IaC scanning | Trivy | Implemented; findings under review |
+| Static security analysis | Semgrep | Implemented; `SEC-FE-001` tracked |
+| CI | GitHub Actions | Implemented |
 | Testing | Pytest | Implemented |
-| Navigation | Google Maps URLs | Backend URL generation implemented |
+| Navigation | Google Maps URLs | Implemented without a Maps API key |
 
-Technologies will be added or updated as the architecture evolves.
+## 7. Development Environment and Local Access
 
-## 7. Development Environment
+Primary environment: Ubuntu Desktop 26.04.1 LTS, VMware Workstation Pro, Visual Studio Code, Python virtual environments, Docker Engine/Compose, local kind Kubernetes, Git, and GitHub.
 
-The primary development environment consists of:
+From the repository root:
 
-- Ubuntu Desktop 26.04.1 LTS.
-- VMware Workstation Pro.
-- Visual Studio Code.
-- Python virtual environments.
-- Docker Engine and Docker Compose.
-- Local kind Kubernetes cluster.
-- Git and GitHub.
+```bash
+source .venv/bin/activate
+python -m uvicorn app.main:app --reload
+```
 
-Development is currently performed locally before deployment to external infrastructure.
+| URL | Purpose |
+|---|---|
+| `http://127.0.0.1:8000/web` | Homepage |
+| `http://127.0.0.1:8000/web/courts` | Searchable directory |
+| `http://127.0.0.1:8000/web/courts/1` | Example detail page; use an existing sample court ID |
+| `http://127.0.0.1:8000/courts/` | JSON court API |
+| `http://127.0.0.1:8000/health` | Health check |
+| `http://127.0.0.1:8000/docs` | FastAPI interactive API docs |
+
+Run tests with:
+
+```bash
+python -m pytest app/tests/ -q
+python -m pip check
+```
+
+The frontend and JSON API share the same court service layer. The frontend generates Google Maps links through `app/api/services/maps_service.py`.
 
 ## 8. Project Structure
 
-The repository is organized around application development, infrastructure, testing, and documentation.
-
 ```text
 dc-tennis-connect/
-├── .github/
-│   └── workflows/
+├── .github/workflows/
 ├── app/
 │   ├── api/
-│   └── tests/
+│   │   ├── routes/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── web/routes.py
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── home.html
+│   │   └── courts/
+│   │       ├── index.html
+│   │       └── detail.html
+│   ├── static/css/styles.css
+│   ├── tests/
+│   └── main.py
 ├── docker/
-│   ├── Dockerfile
-│   └── compose.yaml
 ├── kubernetes/
-│   ├── kind/
-│   ├── base/
-│   └── overlays/
 ├── terraform/
 │   ├── environments/
-│   │   ├── local/
-│   │   └── cloud/
 │   └── modules/
 ├── docs/
 │   ├── architecture/
@@ -237,199 +196,62 @@ dc-tennis-connect/
 └── README.md
 ```
 
-The Terraform directories are being introduced during Phase 6 and may initially be empty.
+## 9. DevSecOps Implementation and Security Status
 
-The structure is designed to support future application functionality and cloud environments without requiring a major reorganization.
+- **Version control:** Dedicated feature branches, pull requests, and review before merging into `main`.
+- **Testing:** Automated backend, frontend, Maps, and API checks. A previous Phase 7 checkpoint reported 42 passing tests; later additions require a fresh final count before merge.
+- **Containers:** Non-root runtime configuration and local Docker verification.
+- **Kubernetes:** Local kind deployment with probes, ConfigMap, resource limits, and security contexts.
+- **Terraform:** Local infrastructure foundation, formatting/validation, and IaC scanning.
+- **CI:** GitHub Actions checks for tests, dependencies, Semgrep, Trivy image scanning, and Terraform IaC. Actual run outcomes must be checked per commit.
+- **Frontend security:** Jinja2 escaping, FastAPI input validation, generated fixed-domain Google Maps links, external-link protections, and regression tests.
 
-## 9. DevSecOps Implementation
+Security findings and decisions are tracked in [`docs/runbooks/security-findings.md`](docs/runbooks/security-findings.md). The Semgrep template-link finding `SEC-FE-001` requires an evidence-based disposition. The Phase 7 Trivy image scan recorded 189 vulnerability findings (49 High, 75 Medium, 65 Low, 0 Critical, 0 Unknown) before subsequent evidence verification; use the latest recorded scan and review findings before any deployment decision. Successful scans do **not** mean the application is vulnerability-free.
 
-### Version Control
-
-Git and GitHub are used for source control, feature branching, pull requests, and code review.
-
-### Automated Testing
-
-Pytest provides automated verification of the FastAPI application.
-
-The current test suite contains 16 passing tests.
-
-### Containerization
-
-Docker packages the FastAPI application into a portable container.
-
-Docker Compose provides the local application and PostgreSQL environment.
-
-### Security Scanning
-
-Trivy scans container images for known vulnerabilities.
-
-Semgrep performs static analysis of application source code.
-
-Security findings, remediation decisions, and outstanding risks are documented in `docs/runbooks/security-findings.md`.
-
-### CI/CD
-
-GitHub Actions automatically runs:
-
-- Python application tests.
-- Dependency consistency checks.
-- Semgrep static security analysis.
-- Trivy container vulnerability scanning.
-
-Trivy vulnerability findings are currently report-only. Additional enforcement will be introduced after reviewing the vulnerability baseline.
-
-### Kubernetes
-
-The application is deployed locally using kind.
-
-The Kubernetes configuration includes:
-
-- FastAPI Deployment.
-- ClusterIP Service.
-- ConfigMap.
-- Health probes.
-- Resource requests and limits.
-- Restricted container security settings.
-
-### Infrastructure as Code
-
-Phase 6 introduces Terraform for declarative infrastructure management.
-
-Initial exercises will use local infrastructure resources before introducing cloud infrastructure.
+The project remains **local-development only** and is **not approved for public production deployment**.
 
 ## 10. Development Roadmap
 
 | Phase | Focus | Status |
 |---|---|---|
-| Phase 1 | Development environment setup | Complete |
-| Phase 2A | Git, GitHub, and documentation | Complete |
-| Phase 2B | FastAPI application foundation | Complete |
-| Phase 3 | Docker and Docker Compose | Complete |
-| Phase 4 | Security scanning and GitHub Actions | Complete |
-| Phase 5 | Kubernetes with kind | Complete |
-| Phase 6 | Terraform and Infrastructure as Code | Complete |
-| Phase 7 | Responsive frontend development | In Progress |
-| Phase 8 | PostgreSQL integration and real court data | Planned |
-| Phase 9 | Player accounts and match scheduling | Planned |
-| Phase 10 | Cloud deployment and public access | Planned |
-| Phase 11 | Production security and operational readiness | Planned |
+| 1 | Development environment | Complete |
+| 2A | Git, GitHub, and documentation | Complete |
+| 2B | FastAPI foundation | Complete |
+| 3 | Docker and Docker Compose | Complete |
+| 4 | Security scanning and GitHub Actions | Complete |
+| 5 | Kubernetes with kind | Complete |
+| 6 | Terraform and infrastructure as code | Complete |
+| 7 | Frontend implementation and hardening | In progress — Exercise 5 |
+| 8 | PostgreSQL application persistence and real court data | Planned |
+| 9 | Player accounts, matching, and scheduling | Planned |
+| 10 | Public cloud deployment | Planned |
+| 11 | Production security and operational readiness | Planned |
 
-### Current Focus — Phase 7: Frontend Development
-
-The initial frontend will provide a responsive, browser-based interface for discovering tennis courts.
-
-Planned deliverables:
-
-- Homepage introducing DC Tennis Connect.
-- Court directory displaying existing fictional court records.
-- Court search and filtering.
-- Individual court detail pages.
-- Court location and Google Maps directions.
-- Clear presentation of available court information.
-- Responsive layouts for desktop and mobile browsers.
-- User-friendly error and empty states.
-- Automated tests for frontend routes and rendering.
-
-The frontend will reuse the existing FastAPI court service layer.
-
-Player accounts, real court data, persistent scheduling, and public cloud hosting remain outside the Phase 7 scope.
-
-### Application Development Backlog
-
-The following features remain planned independently of infrastructure learning:
-
-- Responsive frontend — Phase 7 in progress
-- Public tennis court data integration.
-- PostgreSQL application persistence.
-- Authentication and player profiles.
-- Player matching and match scheduling.
-- Notifications.
+**Phase 7 completed work:** frontend planning, homepage, directory, search/filtering, court detail pages, Maps navigation, accessibility improvements, security reviews, and local deployment checks. Exercise 6 will cover final review, pull request, merge, repository synchronization, and VMware snapshot.
 
 ## 11. Cloud Deployment Goal
 
-A future phase will make DC Tennis Connect accessible through a public HTTPS URL.
-
-The target is a responsive application usable from desktop and mobile browsers.
-
-Cloud deployment planning will include:
-
-- Appropriate hosting infrastructure.
-- Public HTTPS access and DNS.
-- Database persistence.
-- Secure configuration and secret management.
-- Automated deployment workflows.
-- Logging, monitoring, and recovery.
-- Security validation before public access.
-
-Kubernetes and Terraform will be evaluated as deployment options, but the application will not require a managed Kubernetes service if a simpler hosting approach is more economical.
+A later phase aims to provide a public HTTPS website usable from desktop and mobile browsers. Hosting decisions will consider cost, DNS, HTTPS, secure configuration, persistent data, automated deployment, logging, monitoring, backup/recovery, and security validation. Kubernetes and Terraform are options, not mandatory production hosting choices.
 
 ## 12. Security and Privacy
 
-The project follows secure development practices, including:
+Development practices include least-privilege permissions, non-root containers, secret protection, input validation, Jinja2 escaping, trusted navigation URL generation, automated tests, scanning, and documented security reviews.
 
-- Least-privilege access.
-- Non-root container execution.
-- Automated testing and security scanning.
-- Protection of credentials and environment files.
-- Input validation.
-- Security findings documentation.
-- Review of infrastructure changes.
+Relevant documents:
 
-The current environment is intended for local development and learning.
+- [`docs/security/security-policy.md`](docs/security/security-policy.md)
+- [`docs/runbooks/security-findings.md`](docs/runbooks/security-findings.md)
 
-The application is not yet approved for public production deployment.
-
-### Security Documentation
-
-- `docs/security/security-policy.md`
-- `docs/runbooks/security-findings.md`
-
-Outstanding vulnerabilities remain tracked for future investigation and remediation.
+Real player data and authentication are not yet implemented. Public release requires additional security and privacy review.
 
 ## 13. Cost Considerations
 
-The project prioritizes free and open-source technologies.
+The project prioritizes free and open-source technologies. Local development does not require paid cloud infrastructure, and Google Maps directions use standard URLs rather than a paid Maps API.
 
-Current local development does not require paid cloud infrastructure.
-
-Google Maps directions use standard URLs rather than paid mapping APIs.
-
-Potential future costs include:
-
-- Cloud hosting.
-- Database hosting and storage.
-- Domain registration.
-- SMS delivery.
-- Third-party data services.
-
-Free tiers and trial offerings will be evaluated before provisioning cloud resources.
-
-Any paid service must be evaluated and approved before implementation.
+Potential later costs include cloud hosting, database storage, domains, SMS delivery, and third-party data services. Paid services must be evaluated and approved before use.
 
 ## 14. Documentation and Maintenance
 
-The project maintains separate documentation for:
+Application requirements, architecture, feature backlog, security policies, scan findings, infrastructure configuration, and runbooks are maintained separately and version-controlled through GitHub.
 
-- Application requirements.
-- System architecture.
-- Kubernetes architecture.
-- Security policies.
-- Security findings.
-- Infrastructure configuration.
-- Operational procedures.
-
-Documentation will be updated as new features, technologies, and deployment environments are introduced.
-
-Changes should be reviewed and version-controlled through GitHub pull requests.
-
-## 15. Current Project Status
-
-**Current Phase:** Phase 7 — Frontend Development
-
-**Completed:** FastAPI foundation, Docker and Docker Compose, automated testing, security scanning, GitHub Actions CI/CD, local Kubernetes deployment, and Terraform infrastructure foundation.
-
-**In Progress:** Frontend architecture planning, documentation, and preparation for Jinja2 template integration.
-
-**Next Major Milestone:** Build a responsive frontend that displays fictional tennis court records, supports court filtering, and provides Google Maps navigation.
-
-**Long-Term Goal:** Deliver a secure, publicly accessible web application that helps Washington, D.C. tennis players find courts, coordinate matches, and play more often.
+Update documentation when implementation or security decisions change. Phase 7 changes remain on `feature/frontend-foundation` until the Exercise 6 pull request and merge are complete.

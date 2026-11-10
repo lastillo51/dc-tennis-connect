@@ -1,239 +1,184 @@
 # DC Tennis Connect — System Architecture
 
+> **Current stage:** Phase 7 — Frontend Development, Exercise 5  
+> **Deployment scope:** Local development and testing; not approved for public production deployment.  
+> **Document purpose:** Describe implemented architecture, planned components, and the boundaries between them.
+
 ## 1. Architecture Overview
 
-DC Tennis Connect will use a Python FastAPI application, PostgreSQL database, and responsive web interface.
+DC Tennis Connect is a FastAPI application for helping Washington, D.C. tennis players discover courts and, in future phases, coordinate matches. The current application combines a JSON API with server-rendered Jinja2 pages. Both interfaces use shared Pydantic court models and service functions backed by **fictional in-memory sample records**.
 
-The application will combine publicly available tennis court scheduling information with player-generated match scheduling.
+Docker and Docker Compose support local container development. A local Kubernetes cluster created with kind provides an orchestration test environment. Terraform supports infrastructure-as-code learning through local resources and reusable modules. PostgreSQL is available in the local container environment but **application court and player records are not yet persisted there**.
 
-The system will not independently reserve public courts or guarantee physical court availability.
+The application does not reserve public courts or guarantee that a court is unoccupied. Public cloud hosting, verified DC court data, player accounts, and scheduling are not implemented.
 
-## 2. Core Components
+### 1.1 Implemented request flow
 
-### Web Interface
+```text
+Browser
+  |-- /web, /web/courts, /web/courts/{court_id}
+  v
+FastAPI frontend router (app/web/routes.py)
+  |-- Jinja2 templates (app/templates/)
+  |-- Static CSS (app/static/css/)
+  |-- Court service (app/api/services/court_service.py)
+  `-- Google Maps service (app/api/services/maps_service.py)
 
-The responsive web interface will support:
+JSON API (/courts/) --> Shared court service --> Fictional sample records
+Health endpoint (/health) --> FastAPI
 
-- Public tennis court directory.
-- Court details and locations.
-- Published operating hours and availability classifications.
-- Court and date selection.
-- Player profiles.
-- Match invitations and scheduling.
-- Google Maps navigation.
+Docker image --> Local Docker runtime / kind Kubernetes Deployment
+Terraform --> Separate local infrastructure exercises
+```
 
-### Frontend Implementation Architecture
+The frontend calls shared Python services directly; it does not make HTTP requests to its own JSON API.
 
-The initial frontend will use server-rendered HTML templates integrated with the existing FastAPI application.
+## 2. Core Components and Responsibilities
 
-Frontend technologies:
+| Component | Implementation | Current status |
+|---|---|---|
+| Backend and JSON API | Python, FastAPI, Pydantic | Implemented |
+| Frontend | FastAPI web routes, Jinja2, HTML, CSS | Implemented with fictional data |
+| Court retrieval and search | `app/api/services/court_service.py` | Implemented |
+| Google Maps directions | `app/api/services/maps_service.py` | Implemented |
+| Application records | In-memory fictional court dataset | Development-only |
+| PostgreSQL | Local container with persistent storage | Configured; application persistence planned |
+| Docker | Application image and Compose configuration | Implemented locally |
+| Kubernetes | kind cluster, Deployment, Service, ConfigMap, probes, security context | Implemented locally |
+| Terraform | Local environments, modules, validation and IaC scans | Foundation completed |
+| CI and security | GitHub Actions, Pytest, Semgrep, Trivy | Implemented; findings require review |
+| Player accounts and match scheduling | Planned services and persistent records | Not implemented |
+| Public cloud deployment | Future HTTPS-hosted application | Not implemented |
 
-- Jinja2 for HTML template rendering.
-- HTML5 for semantic page structure.
-- CSS3 for responsive layouts.
-- Minimal JavaScript for progressive enhancement.
-- FastAPI routes for serving frontend pages.
-- FastAPI static file support for CSS, JavaScript, and other approved assets.
+### 2.1 Frontend structure
 
-Frontend routes will remain logically separate from existing JSON API routes.
+```text
+app/
+├── main.py
+├── api/
+│   ├── routes/
+│   ├── schemas/
+│   └── services/
+│       ├── court_service.py
+│       └── maps_service.py
+├── web/
+│   ├── __init__.py
+│   └── routes.py
+├── templates/
+│   ├── base.html
+│   ├── home.html
+│   └── courts/
+│       ├── index.html
+│       └── detail.html
+├── static/
+│   └── css/
+│       └── styles.css
+└── tests/
+```
 
-The frontend will reuse the established court service layer rather than duplicating court data or making unnecessary HTTP requests to its own API.
+This tree highlights relevant files, not every repository file. Custom HTML error templates and a JavaScript bundle are **not assumed to exist**; add them only when implemented.
 
-The architecture will support future replacement or extension of the frontend without requiring major changes to the court service layer.
+### 2.2 Current routes
 
-### Frontend Responsibilities
+| Route | Response | Responsibility |
+|---|---|---|
+| `/web` | HTML | Homepage |
+| `/web/courts` | HTML | Court directory, search, public-access filtering |
+| `/web/courts/{court_id}` | HTML | Individual court details and directions |
+| `/courts/` | JSON | Existing court API |
+| `/health` | JSON | Health check |
+| `/docs` | HTML | FastAPI API documentation |
+| `/static/css/styles.css` | CSS | Local frontend stylesheet |
 
-The frontend will:
+Unknown court IDs return HTTP 404; invalid typed parameters return HTTP 422. Custom styled error pages are a separate enhancement.
 
-- Render the homepage and court directory.
-- Display court details returned by the service layer.
-- Support court search and filtering.
-- Present court location information.
-- Provide Google Maps navigation links.
-- Clearly distinguish published court information from unknown availability.
-- Display appropriate empty and error states.
-- Support desktop and mobile browser layouts.
+### 2.3 Frontend behavior and boundaries
 
-### Frontend Boundaries
+The current interface displays court names, nested addresses, public-access information, court counts, availability classifications, and operating hours when present. It supports case-insensitive court name/address search and public-only filtering. Responsive layouts, keyboard navigation, semantic markup, and accessibility checks are part of Phase 7 hardening.
 
-The initial frontend will not:
+The frontend does **not** provide live occupancy, official reservations, real court data ingestion, authentication, persistent schedules, or player matching. A displayed availability classification is not evidence of real-time court availability.
 
-- Implement player authentication.
-- Create or manage court reservations.
-- Guarantee physical court availability.
-- Introduce persistent player scheduling.
-- Integrate real public court data.
-- Require paid mapping APIs.
+## 3. Court Data and Availability Architecture
 
-These capabilities will be introduced incrementally as their supporting backend services become available.
+### 3.1 Current data model
 
-### Backend
+Court records are represented by Pydantic models, including nested `CourtLocation` (address and optional coordinates), optional operating hours, public-access status, reservation-required flag, availability classification, and optional source metadata. The current records are fictional and held in memory.
 
-Python and FastAPI will provide:
+### 3.2 Planned public data sources
 
-- Court directory endpoints.
-- Court schedule retrieval.
-- Schedule data validation.
-- Player profile management.
-- Match scheduling and invitation workflows.
-- Authentication and authorization.
-- Google Maps destination link generation.
-
-### PostgreSQL Database
-
-The database will maintain separate records for:
-
-- Tennis courts.
-- Court locations.
-- Court operating hours.
-- Published closures and reservation information.
-- Public data sources.
-- Schedule verification timestamps.
-- Player profiles.
-- Player availability preferences.
-- Match invitations.
-- Scheduled matches.
-
-Public court schedules and player-created matches shall remain logically separate.
-
-An accepted player match shall not automatically change a public court's reservation availability status.
-
-## 3. Public Court Data Management
-
-### Data Sources
-
-The application will prioritize reliable, authorized public information from sources such as:
+Authorized sources may include:
 
 - DC Department of Parks and Recreation.
 - DC Open Data.
-- Official public reservation systems where permitted.
+- Official public reservation systems where access and reuse are permitted.
 - Published facility schedules and closure notices.
 
-The availability and permitted use of each source must be verified before integration.
+Each source must be checked for accuracy, permitted use, and update frequency before integration. The initial real-data implementation is expected to use manually verified public information; automation is conditional on source permissions.
 
-### Data Collection
+### 3.3 Planned validation and freshness
 
-The initial implementation may use manually verified public court information.
+Future persisted court records should distinguish published operating hours, reservable slots, published reservations, first-come-first-served access, known closures, and unknown availability. Where available, record source attribution, verification timestamps, and date-specific restrictions. Do not represent stale or unverified information as confirmed availability.
 
-Automated collection may be introduced after confirming that the source permits programmatic access.
+## 4. Google Maps Navigation
 
-### Data Validation
+The detail-page route obtains a `CourtLocation` from the shared court service and calls `build_google_maps_url(court.location)`. The Maps service constructs a Google Maps directions URL using a fixed HTTPS endpoint and an encoded destination. Coordinates may be used when available; otherwise the address is used.
 
-Court schedule information will include, where available:
+The rendered link opens Google Maps externally with `target="_blank"` and `rel="noopener noreferrer"`. The application does not calculate routes, collect the user's precise location, or require a paid Google Maps API key for these standard URLs.
 
-- Court identifier.
-- Published operating hours.
-- Date-specific restrictions.
-- Reservation information.
-- Closure information.
-- Original source.
-- Last verification timestamp.
+**Security constraint:** Do not substitute arbitrary user-controlled URLs or the optional `court.google_maps_url` field as a direct link without appropriate validation. The dynamic Jinja2 `href` is tracked as Semgrep finding `SEC-FE-001`; its documented disposition and CI treatment remain subject to verification in `docs/runbooks/security-findings.md`.
 
-The application shall distinguish operating hours from confirmed reservation availability.
+## 5. Planned Player Matching and Scheduling
 
-### Data Freshness
+Future authenticated players will be able to select a court and proposed date/time, invite another player, accept or decline invitations, and view accepted sessions. Proposed match states include **Pending, Accepted, Declined, and Cancelled**.
 
-Outdated or unverified schedule information shall be clearly identified.
+Scheduling validation should reject past sessions, times outside verified operating hours, and verified closures; identify overlapping accepted matches and known conflicts; and warn when availability is unknown. A scheduled match represents an agreement between players, **not an official court reservation**. First-come-first-served courts may still be occupied upon arrival.
 
-The system shall not imply real-time accuracy when the source does not support it.
+Planned PostgreSQL records include courts, locations, hours, closures, public sources, verification timestamps, player profiles, availability preferences, invitations, and matches. Public court schedules and player-created matches must remain logically separate: accepting a match must not change official reservation availability.
 
-## 4. Player Match Scheduling
+## 6. Local Development and Deployment
 
-Players will coordinate hitting sessions around published court information.
+### 6.1 Development environment
 
-### Scheduling Workflow
+- Ubuntu Desktop 26.04.1 LTS in VMware Workstation Pro.
+- Git, GitHub, Visual Studio Code, Python virtual environment and `requirements.txt`.
+- Docker Engine, Docker Compose, local PostgreSQL, kind, kubectl, and Terraform.
 
-1. A player selects a court.
-2. The application displays published operating hours and known restrictions.
-3. The player selects a proposed date and time.
-4. The application validates the proposed time against known restrictions.
-5. The player invites another registered player.
-6. The invited player accepts or declines.
-7. Accepted matches appear in both players' schedules.
-8. Players can access Google Maps directions to the selected court.
+### 6.2 Docker
 
-### Match Status
+The application image packages FastAPI code, Jinja2 templates, and static CSS. Local verification should cover HTML, JSON API, health endpoint, CSS, and non-root runtime execution. Docker Compose provides local application/database services. Images require Trivy review; a successful scan does not mean all reported vulnerabilities are remediated.
 
-Proposed match statuses include:
+### 6.3 Kubernetes
 
-- Pending.
-- Accepted.
-- Declined.
-- Cancelled.
+The local kind environment includes a Deployment, ClusterIP Service, ConfigMap, readiness/liveness probes, resource limits, and a restricted security context. Frontend image tests must verify HTML, CSS, and JSON endpoints after rollout. Changes made with `kubectl set image` affect the live cluster only; reconcile or restore Git-managed manifests so deployment configuration remains reproducible.
 
-A scheduled match represents an agreement between players, not a court reservation.
+### 6.4 Terraform
 
-### Scheduling Validation
+Phase 6 established local Terraform resources, modules, variables, outputs, state handling, validation, and IaC scanning. It does **not** provision the public cloud application. Future cloud environments require decisions about state security, credentials, network exposure, and cost.
 
-The application shall:
+## 7. DevSecOps and Security Architecture
 
-- Reject past match times.
-- Reject sessions outside known operating hours.
-- Reject sessions during verified closures.
-- Flag known reservation conflicts.
-- Identify overlapping accepted matches for the same player.
-- Display warnings when court availability is unknown.
+| Control | Current implementation / expectation |
+|---|---|
+| Source control | Feature branches, reviewed pull requests, synchronized `main` |
+| Testing | Pytest for API, frontend, service and security regression behavior |
+| Dependency checks | `python -m pip check` |
+| Static analysis | Semgrep `p/security-audit` and documented finding disposition |
+| Container scanning | Trivy vulnerability and secret-scanning evidence |
+| IaC validation | Terraform formatting, validation, Trivy config scanning |
+| CI | GitHub Actions for applicable branches and pull requests |
+| Container security | Non-root execution and Kubernetes security contexts |
+| Frontend security | Jinja2 autoescaping, input validation, trusted external URLs, controlled static assets |
+| Accessibility | Semantic HTML, labeled controls, keyboard access, visible focus, responsive layouts |
 
-A first-come, first-served court may still be occupied when players arrive.
+Frontend browser security headers and Content Security Policy require compatibility review before enforcement. Do not enable HSTS on the local HTTP environment. Authentication, authorization, CSRF defenses for state-changing forms, production secrets, monitoring, and data protection are required as relevant functionality is introduced.
 
-## 5. Google Maps Navigation
+The application is **not approved for public deployment**. The security findings register tracks the Phase 7 `SEC-FE-001` investigation and Trivy frontend-image findings, including the recorded High-severity vulnerabilities. Do not interpret scanner execution or passing tests as risk acceptance.
 
-Each court listing will provide an address and Get Directions option.
+## 8. Development Dependency Compatibility
 
-The application will use Google Maps URLs to open external navigation.
+Python dependencies are managed in `.venv` and the version-controlled `requirements.txt`. The following versions were recorded during the Phase 2B environment verification; they are **historical**, not a claim about currently installed versions.
 
-No paid Google Maps API is required for the initial implementation.
-
-The application will not calculate routes or require users to share their precise location.
-
-## 6. Development Environment
-
-Development will take place locally using:
-
-- Ubuntu Desktop 26.04.1 LTS.
-- VMware Workstation Pro.
-- Git and GitHub.
-- Visual Studio Code.
-- Python and FastAPI.
-- PostgreSQL.
-
-## 7. DevSecOps Architecture
-
-### Docker
-
-Docker Engine and Docker Compose will package and run the application and database locally.
-
-### Terraform
-
-Terraform will support infrastructure-as-code learning and repeatable infrastructure provisioning.
-
-### Kubernetes
-
-A local kind cluster will support Kubernetes deployment exercises.
-
-### Trivy
-
-Trivy will scan container images, dependencies, and supported infrastructure configurations.
-
-### Semgrep
-
-Semgrep will perform static application security analysis.
-
-### GitHub Actions
-
-GitHub Actions will automate testing and security checks in later phases.
-
-### Development Dependency Management and Compatibility
-
-DC Tennis Connect will maintain version-controlled Python dependencies to support reproducible development, automated testing, and future CI/CD integration.
-
-Python dependencies are currently managed using a project-specific virtual environment (`.venv`) and a `requirements.txt` file.
-
-#### Current Development Dependencies
-
-The following dependency versions were verified during Phase 2B:
-
-| Dependency | Version |
+| Dependency | Phase 2B recorded version |
 |---|---|
 | Python | 3.14 |
 | FastAPI | 0.159.1 |
@@ -241,91 +186,51 @@ The following dependency versions were verified during Phase 2B:
 | HTTPX | 0.28.1 |
 | Pytest | 9.1.1 |
 
-These versions represent the development environment at the time of verification and may change as the project evolves.
+A known testing warning was reported:
 
-#### Known Dependency Compatibility Warning
+```text
+StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated; install httpx2 instead.
+```
 
-During Phase 2B, automated testing produced the following warning:
+The previously recorded regression baseline was **42 passed, 1 warning**. `python -m pip check` also passed at that checkpoint. Later test counts and package versions must be recorded from actual executions. This warning is a dependency-maintenance issue, not by itself a confirmed vulnerability.
 
-`StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated; install httpx2 instead.`
+**Decision:** Keep the working dependency set until official migration guidance and a compatible replacement have been evaluated. Do not upgrade or suppress the warning solely to make output quieter. Any migration should be tested in the virtual environment, followed by the full Pytest suite, `pip check`, security scans as applicable, and a reviewed `requirements.txt` update.
 
-The warning originates from Starlette's testing integration, which FastAPI uses through `TestClient`.
+## 9. Future Cloud and Production Architecture
 
-The current automated tests execute successfully despite the warning.
+Before public access, design and verify:
 
-The dependency validation command:
+- Authorized real court data ingestion, source attribution, and freshness controls.
+- PostgreSQL application persistence and backups.
+- Authentication, authorization, sessions, and privacy protections.
+- HTTPS, DNS, network exposure, secret management, and secure browser headers.
+- Monitoring, logging, recovery, and deployment/rollback workflows.
+- Security findings remediation or formally reviewed risk decisions.
+- Cost-aware hosting; managed Kubernetes is optional, not a requirement.
 
-`python -m pip check`
+Public deployment should be gated on verified operational and security readiness, not merely successful local Kubernetes tests.
 
-returned:
+## 10. Architecture Status and Maintenance
 
-`No broken requirements found.`
+| Area | Status |
+|---|---|
+| Phases 1–6 local DevSecOps foundations | Completed |
+| Phase 7 frontend pages, court search, details, Maps navigation | Implemented; Phase 7 final review pending |
+| Phase 7 accessibility, security and deployment hardening | Exercise 5 verification/documentation in progress |
+| Phase 8 real court data and PostgreSQL persistence | Planned |
+| Phase 9 player accounts and scheduling | Planned |
+| Phase 10 cloud deployment | Planned |
+| Phase 11 production security and operations | Planned |
 
-This indicates that the installed packages satisfy their declared dependency requirements. It does not guarantee compatibility with future releases.
+Update this document when an implemented route, component, data source, deployment mechanism, or security boundary changes. Keep historical verification evidence in the relevant runbooks and do not silently replace planned capabilities with claims of implementation.
 
-#### Current Decision
+## 11. Related Documentation
 
-The project will retain the currently working dependency versions until the recommended migration path has been reviewed and tested.
-
-No dependency changes will be introduced solely to suppress the warning.
-
-The warning is classified as a **known development dependency compatibility issue**, not a confirmed security vulnerability.
-
-#### Planned Follow-Up Actions
-
-1. Review official FastAPI and Starlette release notes and migration guidance.
-2. Determine whether HTTPX2 is the recommended replacement for the installed versions.
-3. Evaluate the impact of any migration on existing automated tests.
-4. Test dependency changes within the Python virtual environment.
-5. Run the complete Pytest suite after dependency updates.
-6. Run `python -m pip check` to verify declared dependency compatibility.
-7. Update `requirements.txt` with the validated dependency versions.
-8. Remove this known issue once the warning has been resolved and regression tests pass.
-
-#### Future DevSecOps Integration
-
-As the project evolves, dependency management will be integrated into the DevSecOps workflow.
-
-Future GitHub Actions pipelines should:
-
-- Install dependencies from the version-controlled dependency manifest.
-- Run automated tests.
-- Check dependency compatibility.
-- Execute security scans using Trivy and Semgrep where applicable.
-- Report failures and relevant warnings before changes are merged.
-
-Dependency upgrades will be introduced through feature branches and reviewed through GitHub pull requests.
-
-Significant compatibility issues will be documented until resolved.
-
-
-## 8. Security and Privacy
-
-The application will follow these principles:
-
-- Least privilege.
-- Secure authentication and authorization.
-- No credentials committed to Git.
-- Validation of user-provided scheduling information.
-- Protection of player availability and match details.
-- Secure handling of public data imports.
-- Safe construction of external navigation URLs.
-- Minimal collection of precise location information.
-
-## 9. Future Enhancements
-
-Potential future improvements include:
-
-- Automated public schedule synchronization.
-- Court schedule change notifications.
-- Enhanced player matching.
-- Email and SMS notifications.
-- Interactive court maps.
-- Distance-based court search.
-- Native mobile applications.
-
-## 10. Architecture Status
-
-This document describes the proposed architecture.
-
-Data source feasibility, integration methods, and implementation details will be validated before development.
+- `README.md` — project overview, local usage, and roadmap.
+- `docs/architecture/frontend-overview.md` — detailed frontend architecture.
+- `docs/architecture/kubernetes-overview.md` — local Kubernetes architecture.
+- `docs/architecture/terraform-overview.md` — Terraform foundation.
+- `docs/requirements/feature-backlog.md` — implementation and future feature status.
+- `docs/security/security-policy.md` — security requirements.
+- `docs/runbooks/security-findings.md` — scan baselines, findings, and decisions.
+- `.github/workflows/security-ci.yml` — CI implementation.

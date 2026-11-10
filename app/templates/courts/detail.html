@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="court-detail">
+    <div class="container">
+
+        <nav aria-label="Breadcrumb">
+            <a href="/web">Home</a>
+            <span aria-hidden="true"> / </span>
+            <a href="/web/courts">Courts</a>
+            <span aria-hidden="true"> / </span>
+            <span aria-current="page">{{ court.name }}</span>
+        </nav>
+
+        <header class="court-detail-header">
+            <h1>{{ court.name }}</h1>
+            <p>{{ court.location.address }}</p>
+        </header>
+
+        <div class="court-detail-grid">
+
+            <section class="court-detail-card">
+                <h2>Court information</h2>
+
+                <dl>
+                    <dt>Number of courts</dt>
+                    <dd>{{ court.number_of_courts }}</dd>
+
+                    <dt>Public access</dt>
+                    <dd>
+                        {% if court.public_access %}
+                            Yes
+                        {% else %}
+                            Access restrictions may apply
+                        {% endif %}
+                    </dd>
+
+                    <dt>Availability classification</dt>
+                    <dd>
+                        {{ court.availability_status.value
+                           | replace("_", " ")
+                           | title }}
+                    </dd>
+
+                    <dt>Reservation required</dt>
+                    <dd>
+                        {{ "Yes" if court.reservation_required else "No" }}
+                    </dd>
+                </dl>
+            </section>
+
+            <section class="court-detail-card">
+                <h2>Operating hours</h2>
+
+                {% if court.operating_hours %}
+                    <p>
+                        {{ court.operating_hours.opening_time.strftime("%I:%M %p") }}
+                        –
+                        {{ court.operating_hours.closing_time.strftime("%I:%M %p") }}
+                    </p>
+                {% else %}
+                    <p>
+                        Operating hours are not currently available.
+                    </p>
+                {% endif %}
+
+                <p class="court-disclaimer">
+                    Published operating hours do not guarantee
+                    that a court is physically unoccupied.
+                </p>
+            </section>
+
+            <section class="court-detail-card">
+                <h2>Location and directions</h2>
+
+                <p>{{ court.location.address }}</p>
+
+                {% if google_maps_url %}
+                    <a
+                        class="button button-primary"
+                        href="{{ google_maps_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Get Google Maps Directions
+                    </a>
+                {% else %}
+                    <p>
+                        Directions are not currently available
+                        for this court.
+                    </p>
+                {% endif %}
+            </section>
+
+        </div>
+
+        <section class="court-availability-notice">
+            <h2>Important availability information</h2>
+
+            <p>
+                DC Tennis Connect does not reserve public courts.
+                Published operating hours and scheduling information
+                do not guarantee physical court availability.
+            </p>
+        </section>
+
+        <p>
+            <a href="/web/courts">
+                Back to all courts
+            </a>
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}

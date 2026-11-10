@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <p class="eyebrow">
+            Washington, D.C. Tennis
+        </p>
+
+        <h1>Find your next tennis court.</h1>
+
+        <p class="hero-description">
+            Discover tennis courts, explore court information,
+            and plan your next hitting session.
+        </p>
+
+        <div class="hero-actions">
+            <a class="button button-primary" href="/web/courts">
+                Explore Courts
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="container">
+        <h2>Plan your next game</h2>
+
+        <div class="feature-grid">
+            <article class="feature-card">
+                <h3>Discover Courts</h3>
+                <p>
+                    Browse tennis court locations throughout
+                    Washington, D.C.
+                </p>
+            </article>
+
+            <article class="feature-card">
+                <h3>Review Court Information</h3>
+                <p>
+                    View published operating information
+                    and known restrictions when available.
+                </p>
+            </article>
+
+            <article class="feature-card">
+                <h3>Get Directions</h3>
+                <p>
+                    Open Google Maps directions to
+                    your selected tennis court.
+                </p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="notice">
+    <div class="container">
+        <h2>Important court availability information</h2>
+        <p>
+            Published operating hours do not guarantee
+            that a tennis court is physically available.
+            DC Tennis Connect does not independently
+            reserve public courts.
+        </p>
+    </div>
+</section>
+{% endblock %}

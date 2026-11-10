@@ -1,337 +1,202 @@
-# DC Tennis Connect — Feature Backlog
+# DC Tennis Connect — Frontend Architecture
 
-## 1. Purpose
+> **Project stage:** Phase 7 — Frontend Development (Exercise 5: quality, security, and deployment compatibility)  
+> **Implementation:** Server-rendered FastAPI/Jinja2 frontend using fictional court data  
+> **Deployment:** Local development and local Docker/kind verification; not approved for public deployment
 
-This document tracks implemented, planned, and future functionality for DC Tennis Connect.
+## 1. Purpose and Scope
 
-The feature backlog supports incremental application development and ensures that new features can be introduced without unnecessarily disrupting existing components.
+This document describes the **implemented** frontend architecture of DC Tennis Connect and distinguishes it from future functionality. The frontend helps users browse fictional sample tennis courts, search names and addresses, filter public-access courts, view details, and open Google Maps directions.
 
-**Current Development Phase:** Phase 7 — Frontend Development
+The application does not reserve courts or verify real-time occupancy. Published hours and availability classifications must not be presented as guarantees that a court is unoccupied. Real Washington, D.C. public court data, player accounts, and match scheduling are outside the current frontend foundation.
 
-**Current Focus:** Building a responsive, browser-based interface for the existing FastAPI court directory.
+## 2. Technology Stack and Principles
 
-## 2. Feature Management Principles
-
-- Develop features incrementally.
-- Prioritize functionality based on user needs and project goals.
-- Maintain modular and extensible application components.
-- Update requirements and architecture documentation when functionality changes.
-- Evaluate security, privacy, testing, accessibility, and cost implications.
-- Use dedicated Git branches for development.
-- Review changes through GitHub pull requests.
-- Preserve existing functionality and API compatibility.
-- Verify features before marking them completed.
-
-### Feature Tracking
-
-The backlog uses two types of identifiers:
-
-| Identifier | Purpose |
+| Technology | Current responsibility |
 |---|---|
-| `FB-XXX` | Tracks application features across development phases |
-| `FE-XXX` | Tracks implementation tasks specific to Phase 7 frontend development |
-
-Feature identifiers shall remain stable.
-
-Completing a Phase 7 task does not automatically mean its corresponding application feature is fully implemented.
-
-## 3. Feature Priorities
-
-### Must Have
-
-- Responsive web application.
-- Public tennis court directory.
-- Court addresses and geographic locations.
-- Published operating hours and known closures.
-- Court scheduling classifications.
-- Google Maps navigation.
-- Public court information source attribution.
-
-### Should Have
-
-- Player registration and profiles.
-- Tennis skill ratings.
-- Player availability preferences.
-- Hitting partner matching.
-- Match invitations.
-- Player match scheduling.
-- Email and SMS notifications.
-
-### Could Have
-
-- In-app messaging.
-- Court ratings and reviews.
-- Social media integration.
-- Interactive map displaying multiple courts.
-- Distance-based court filtering.
-
-### Future Enhancements
-
-- Automated public court schedule updates.
-- Enhanced player matching.
-- Dedicated iOS and Android applications.
-- Advanced monitoring and analytics.
-
-## 4. Application Feature Backlog
-
-This table tracks the overall application functionality.
-
-| ID | Feature | Priority | Status | Planned Phase |
-|---|---|---|---|---|
-| FB-001 | Responsive web interface | Must Have | In Progress — planning | Phase 7 |
-| FB-002 | Public court directory | Must Have | Partially Implemented | Phases 2B, 7–8 |
-| FB-003 | Court operating hours and closures | Must Have | Planned | Phase 8 |
-| FB-004 | Court availability classifications | Must Have | Planned | Phase 8 |
-| FB-005 | Google Maps navigation | Must Have | Partially Implemented | Phases 2B, 7 |
-| FB-006 | Court data source attribution | Must Have | Planned | Phase 8 |
-| FB-007 | Player profiles | Should Have | Planned | Phase 9 |
-| FB-008 | Tennis skill ratings | Should Have | Planned | Phase 9 |
-| FB-009 | Player availability preferences | Should Have | Planned | Phase 9 |
-| FB-010 | Hitting partner matching | Should Have | Planned | Phase 9 |
-| FB-011 | Match invitations and scheduling | Should Have | Planned | Phase 9 |
-| FB-012 | Email notifications | Should Have | Planned | Future |
-| FB-013 | SMS notifications | Should Have | Planned | Future |
-| FB-014 | In-app messaging | Could Have | Backlog | Future |
-| FB-015 | Court ratings and reviews | Could Have | Backlog | Future |
-| FB-016 | Interactive court map | Could Have | Backlog | Future |
-| FB-017 | Automated schedule synchronization | Future | Backlog | Future |
-| FB-018 | Native mobile applications | Future | Backlog | Future |
-
-### Implementation Notes
-
-**FB-001 — Responsive Web Interface**
-
-Frontend architecture and requirements are being documented during Phase 7, Exercise 1. Application implementation has not yet begun.
-
-**FB-002 — Public Court Directory**
-
-The FastAPI backend currently provides a court directory using fictional sample data.
-
-Phase 7 will introduce the browser interface. Real public court data will be integrated during Phase 8.
-
-**FB-005 — Google Maps Navigation**
-
-Google Maps destination URL generation is implemented in the backend.
-
-Phase 7 will expose navigation links through court detail pages.
-
-**FB-003, FB-004, and FB-006**
-
-Published operating hours, availability classifications, and source attribution remain part of the broader application requirements.
-
-The Phase 7 frontend will display supported information without inventing or implying confirmed court availability.
-
-## 5. Phase 7 — Frontend Development Backlog
-
-Phase 7 focuses on creating a responsive web interface using FastAPI, Jinja2, HTML, CSS, and minimal JavaScript.
-
-The frontend will reuse the existing court service layer and preserve current JSON API functionality.
-
-### 5.1 Implementation Tasks
-
-| ID | Feature | Priority | Status | Exercise |
-|---|---|---|---|---|
-| FE-001 | Frontend architecture and documentation | High | In Progress | Exercise 1 |
-| FE-002 | Jinja2 template integration | High | Planned | Exercise 2 |
-| FE-003 | Frontend homepage | High | Planned | Exercise 2 |
-| FE-004 | Court directory interface | High | Planned | Exercise 3 |
-| FE-005 | Court search and filtering | High | Planned | Exercise 3 |
-| FE-006 | Individual court detail pages | High | Planned | Exercise 4 |
-| FE-007 | Google Maps navigation | High | Planned | Exercise 4 |
-| FE-008 | Responsive CSS layout | High | Planned | Exercise 5 |
-| FE-009 | Empty and error states | Medium | Planned | Exercises 3–5 |
-| FE-010 | Frontend accessibility review | High | Planned | Exercise 5 |
-| FE-011 | Automated frontend tests | High | Planned | Exercise 5 |
-| FE-012 | Docker and Kubernetes compatibility verification | High | Planned | Exercise 5 |
-| FE-013 | Final documentation and GitHub integration | High | Planned | Exercise 6 |
-
-### 5.2 Frontend Routing
-
-The initial frontend will use dedicated web routes to avoid disrupting existing API endpoints.
-
-| Route | Purpose |
-|---|---|
-| `/web` | Frontend homepage |
-| `/web/courts` | Court directory |
-| `/web/courts/{court_id}` | Court detail page |
-| `/courts/` | Existing JSON court API |
-| `/health` | Existing health endpoint |
-| `/docs` | Existing Swagger UI |
-
-The frontend will initially use fictional court records.
-
-### 5.3 Phase 7 Acceptance Criteria
-
-Phase 7 is complete when:
-
-1. The homepage renders successfully.
-2. The court directory displays existing fictional court records.
-3. Court search and filtering operate correctly.
-4. Individual court detail pages display available information.
-5. Google Maps navigation links function correctly.
-6. Missing court records produce appropriate responses.
-7. Empty search results display understandable messages.
-8. The interface supports desktop and mobile viewport sizes.
-9. Existing JSON API endpoints remain functional.
-10. Automated frontend and backend tests pass.
-11. Docker and Kubernetes deployments remain compatible.
-12. Frontend changes pass applicable security checks.
-13. Documentation is updated and changes are merged into `main`.
-
-### 5.4 Deferred Features
-
-The following features remain outside Phase 7:
-
-- Authentication and player profiles.
-- Player matching and scheduling.
-- Real public court data ingestion.
-- PostgreSQL application persistence.
-- Automated court schedule synchronization.
-- Public cloud deployment.
-
-These features will be introduced in later phases.
-
-## 6. Feature Status Definitions
-
-| Status | Definition |
-|---|---|
-| Backlog | Proposed functionality not yet scheduled |
-| Planned | Approved functionality awaiting implementation |
-| In Progress | Functionality currently being developed |
-| In Review | Implementation awaiting validation or pull-request review |
-| Partially Implemented | Some supporting functionality exists, but the complete feature is unavailable |
-| Completed | Functionality implemented, tested, and verified |
-| Deferred | Functionality postponed to a later phase |
-| Cancelled | Functionality no longer planned |
-
-### Completion Requirements
-
-A feature should only be marked **Completed** when:
-
-- Its defined acceptance criteria are satisfied.
-- Relevant automated tests pass.
-- Applicable security checks are reviewed.
-- Related documentation is updated.
-- The implementation has been merged into `main`.
-
-## 7. Adding New Features
-
-When new functionality is requested:
-
-1. Create a backlog entry with a unique identifier.
-2. Define the feature's purpose and expected user benefit.
-3. Identify the affected functional and nonfunctional requirements.
-4. Evaluate dependencies and existing application components.
-5. Assess security, privacy, accessibility, and cost implications.
-6. Assign a priority and development phase.
-7. Define measurable acceptance criteria.
-8. Update architecture and requirements documentation as needed.
-9. Implement the change on a dedicated Git branch.
-10. Run automated tests and applicable security scans.
-11. Review changes through a GitHub pull request.
-12. Merge approved changes into `main`.
-13. Update the backlog status after verification.
-
-Feature identifiers shall not be reused when a feature is deferred or cancelled.
-
-## 8. DevSecOps Considerations
-
-Each feature shall be evaluated for applicable security and operational requirements.
-
-### Application Security
-
-- Input validation.
-- Authentication and authorization where applicable.
-- Safe handling of user-provided and external data.
-- Protection of sensitive information.
-- Secure external navigation links.
-
-### Frontend Security
-
-- Jinja2 template autoescaping.
-- Validation of search and filtering parameters.
-- Avoidance of unsafe HTML rendering.
-- Controlled use of JavaScript and third-party assets.
-- Appropriate browser security controls.
-
-### Automated Verification
-
-- Pytest regression tests.
-- Semgrep static security analysis.
-- Trivy container scanning.
-- Terraform infrastructure validation where applicable.
-- GitHub Actions CI checks.
-
-### Deployment and Operations
-
-- Docker compatibility.
-- Kubernetes compatibility.
-- Infrastructure configuration review.
-- Logging and troubleshooting.
-- Deployment and rollback considerations.
-
-Security controls will expand as authentication, persistent user information, and public cloud deployment are introduced.
-
-## 9. Development Phase Alignment
-
-| Phase | Focus | Status |
+| Python / FastAPI | Application, route handling, parameter validation, and service integration |
+| Jinja2 / HTML5 | Server-rendered pages and semantic structure |
+| CSS3 | Responsive layout, visual design, and focus styling |
+| Pytest / FastAPI TestClient | Web route, rendering, integration, and security regression tests |
+| JavaScript | Optional future progressive enhancement; not required by current pages |
+
+Architecture principles:
+
+- Reuse existing API schemas and services rather than duplicating court records or business logic.
+- Keep route handling, data retrieval, URL generation, templates, and styling separate.
+- Preserve the existing JSON API contracts while introducing HTML routes.
+- Prefer native links and forms, accessible semantics, and minimal dependencies.
+- Treat external court data and generated navigation links as security-sensitive inputs.
+- Make unknown or unverified availability explicit.
+
+## 3. Implemented File Structure
+
+```text
+app/
+├── main.py
+├── api/
+│   ├── routes/
+│   │   └── courts.py
+│   ├── schemas/
+│   │   └── court.py
+│   └── services/
+│       ├── court_service.py
+│       ├── maps_service.py
+│       └── sample_courts.py
+├── web/
+│   ├── __init__.py
+│   └── routes.py
+├── templates/
+│   ├── base.html
+│   ├── home.html
+│   └── courts/
+│       ├── index.html
+│       └── detail.html
+├── static/
+│   └── css/
+│       └── styles.css
+└── tests/
+    ├── test_web.py
+    ├── test_court_directory_web.py
+    ├── test_court_detail_web.py
+    ├── test_frontend_accessibility.py
+    ├── unit/
+    │   └── test_maps_service.py
+    └── integration/
+        └── test_api.py
+```
+
+The accessibility test file reflects Exercise 5 work and should be listed as implemented only after it exists and its tests pass. Additional existing application and test files are omitted from this focused tree. Dedicated `errors/` templates and `static/js/main.js` remain **planned**, not assumed to exist.
+
+## 4. Application Components
+
+| Component | File | Responsibility |
 |---|---|---|
-| Phase 1 | Development environment | Complete |
-| Phase 2A | Git, GitHub, and documentation | Complete |
-| Phase 2B | FastAPI application foundation | Complete |
-| Phase 3 | Docker and Docker Compose | Complete |
-| Phase 4 | Security scanning and GitHub Actions | Complete |
-| Phase 5 | Kubernetes with kind | Complete |
-| Phase 6 | Terraform and Infrastructure as Code | Complete |
-| Phase 7 | Responsive frontend development | In Progress |
-| Phase 8 | PostgreSQL integration and real court data | Planned |
-| Phase 9 | Player accounts and match scheduling | Planned |
-| Phase 10 | Cloud deployment and public HTTPS access | Planned |
-| Phase 11 | Production security and operational readiness | Planned |
+| Application entry point | `app/main.py` | Registers routers and mounts `/static` |
+| Frontend routes | `app/web/routes.py` | Homepage, court directory, and detail pages |
+| Court API | `app/api/routes/courts.py` | Existing JSON endpoints, including `list_courts()` |
+| Court service | `app/api/services/court_service.py` | `get_all_courts()`, `get_court_by_id()`, `search_courts()` |
+| Court schema | `app/api/schemas/court.py` | Validated court attributes and nested `CourtLocation` |
+| Sample data | `app/api/services/sample_courts.py` | Fictional in-memory court records |
+| Maps service | `app/api/services/maps_service.py` | `build_google_maps_url(court.location)` |
+| Base template | `app/templates/base.html` | Shared layout, navigation, and static asset reference |
+| Page templates | `app/templates/home.html`, `app/templates/courts/*.html` | User-facing pages |
+| Stylesheet | `app/static/css/styles.css` | Responsive and accessibility-related styles |
 
-## 10. Backlog Maintenance
+The correct address attribute is `court.location.address`, not `court.address`. The frontend uses `search_courts()` from the service layer; the API router's `list_courts()` remains a separate JSON endpoint.
 
-This document shall be reviewed when:
+## 5. Routing and Data Flow
 
-- New application requirements are introduced.
-- Existing features are implemented or modified.
-- Development phases change.
-- Security or architecture decisions affect functionality.
-- Features are deferred or cancelled.
-- Pull requests implementing tracked features are merged.
+| Route | Response | Purpose |
+|---|---|---|
+| `/web` | HTML | Homepage |
+| `/web/courts` | HTML | Searchable, filterable court directory |
+| `/web/courts/{court_id}` | HTML | Individual court details and directions |
+| `/static/css/styles.css` | CSS | Stylesheet |
+| `/courts/` | JSON | Existing court directory API |
+| `/health` | JSON | Health endpoint |
+| `/docs` | HTML | FastAPI interactive API documentation |
 
-### Maintenance Process
+A browser request follows this flow:
 
-1. Review the current backlog.
-2. Update feature statuses using verified implementation evidence.
-3. Add new features without changing existing identifiers.
-4. Update phase assignments when necessary.
-5. Verify consistency with project requirements and architecture documentation.
-6. Review changes through GitHub pull requests.
+1. FastAPI validates the route path and query parameters.
+2. The frontend route calls the shared court service; the service reads fictional sample records.
+3. For a detail page, the route retrieves the selected court and calls `build_google_maps_url(court.location)`.
+4. The route supplies court data and the generated directions URL to Jinja2.
+5. Jinja2 renders HTML and the browser requests the local CSS asset.
 
-## 11. Current Project Status
+The frontend does **not** call its own JSON API over HTTP or maintain a duplicate court database. The API and frontend share the same models and services.
 
-**Current Phase:** Phase 7 — Frontend Development
+## 6. Court Directory and Detail Pages
 
-**Current Exercise:** Exercise 1 — Frontend Architecture and Documentation
+### Court directory
 
-**Completed DevSecOps Foundations:**
+- Displays the fictional court records currently available through the service layer.
+- Supports case-insensitive search across court names and `court.location.address`.
+- Supports public-only filtering using `court.public_access`.
+- Limits the search query length through FastAPI validation.
+- Provides a no-results state and links to individual detail pages.
 
-- FastAPI backend and automated tests.
-- Docker and Docker Compose.
-- Trivy and Semgrep security scanning.
-- GitHub Actions CI/CD.
-- Local Kubernetes deployment.
-- Terraform infrastructure foundation.
+### Court details
 
-**Current Development Focus:**
+- Displays name, nested address, number of courts, public-access status, availability classification, reservation requirement, and operating hours when present.
+- Returns HTTP 404 for unknown court IDs and HTTP 422 for nonnumeric IDs.
+- Displays explicit availability disclaimers rather than suggesting real-time occupancy information.
+- Generates a Google Maps directions link from the existing Maps service. The optional model field `court.google_maps_url` need not be populated in the fictional records.
 
-- Finalize frontend architecture.
-- Update frontend functional and nonfunctional requirements.
-- Define initial web routes and template structure.
-- Prepare the frontend implementation backlog.
-- Review frontend security expectations.
+Google Maps navigation uses a fixed HTTPS directions endpoint and URL-encoded destination data; no Google Maps API key is needed for this URL-based approach. Fictional destinations may not resolve to real facilities.
 
-**Next Milestone:** Implement the first Jinja2 templates and frontend homepage while preserving existing FastAPI JSON endpoints.
+## 7. Accessibility and Responsive Design
 
-**Long-Term Goal:** Deliver a secure, publicly accessible application that helps Washington, D.C. tennis players discover courts, coordinate matches, and navigate to playing locations.
+The frontend uses semantic HTML, native form controls, visible focus styles, and responsive CSS. Phase 7 Exercise 5 includes verification of a skip-navigation link, form labels, heading hierarchy, keyboard navigation, and representative viewport widths (375px, 768px, and 1280px).
+
+Accessibility remains an ongoing review area. Basic HTML assertions and manual keyboard checks do not constitute a complete WCAG conformance audit. Confirm the skip link and any new accessibility tests are actually implemented and passing before marking those specific checks complete.
+
+## 8. Error Handling
+
+- Unknown court records return HTTP 404.
+- Invalid typed parameters or overlong search queries return HTTP 422.
+- Empty searches render a normal HTML empty state.
+- Missing operating hours are displayed as unavailable, not inferred.
+- Standard FastAPI error responses may currently be JSON rather than styled HTML pages.
+
+Dedicated user-friendly 404 and 500 templates are planned improvements. Public deployment must not expose detailed application tracebacks or sensitive configuration.
+
+## 9. Frontend Security
+
+Current controls and verification targets include:
+
+- Jinja2 HTML autoescaping for court names and addresses; avoid unreviewed `safe` filters.
+- FastAPI validation for search parameters and court IDs.
+- A trusted Maps service that constructs the URL rather than accepting arbitrary redirect destinations.
+- `target="_blank"` links paired with `rel="noopener noreferrer"`.
+- Static assets served only from the intended `app/static/` directory.
+- Automated tests for escaping, input validation, and navigation behavior.
+- Semgrep static analysis and Trivy container scanning.
+
+**Tracked security finding:** `SEC-FE-001` concerns the dynamic Jinja2 `href="{{ google_maps_url }}"`. The fixed-domain URL generator supports a potential false-positive assessment, but the finding must retain its evidence-supported disposition in `docs/runbooks/security-findings.md`; passing tests alone do not close it.
+
+The Phase 7 container scan also records vulnerability findings requiring triage. Security headers, CSP enforcement, authentication, and authorization need further assessment before public deployment.
+
+## 10. Testing and Verification
+
+| Test area | Relevant file or procedure |
+|---|---|
+| Homepage | `app/tests/test_web.py` |
+| Court directory, search, filtering | `app/tests/test_court_directory_web.py` |
+| Detail pages, missing records, Maps link, escaping | `app/tests/test_court_detail_web.py` |
+| Maps URL construction | `app/tests/unit/test_maps_service.py` |
+| Existing JSON API | `app/tests/integration/test_api.py` |
+| Accessibility smoke checks | `app/tests/test_frontend_accessibility.py` (verify file and passing tests) |
+| Browser responsiveness and keyboard behavior | Manual desktop/tablet/mobile verification |
+| Security | Semgrep, Trivy, dependency consistency, findings register |
+
+Run the complete application suite with `python -m pytest app/tests/ -q` and dependency consistency with `python -m pip check`. The last explicitly reported regression baseline was **42 passing tests with one Starlette deprecation warning**; update the recorded count only from a newer completed run.
+
+## 11. Local Deployment Compatibility
+
+The frontend runs inside the existing FastAPI process. The Dockerfile copies `app/` into the runtime image, including templates and CSS, and the local kind deployment exposes the same application through a Kubernetes Service.
+
+Phase 7 Exercise 5 verifies the frontend routes and CSS in a local Docker image and in the `dc-tennis` kind cluster. Preserve the non-root container security configuration, health probes, resource limits, and API behavior. A live `kubectl set image` change must be reconciled with the Git-managed Deployment manifest or rolled back after testing.
+
+Terraform currently provides a local infrastructure-as-code learning foundation; this frontend work does not imply production cloud infrastructure has been provisioned.
+
+## 12. Known Limitations and Future Enhancements
+
+- Fictional, in-memory court records; no live public DC court data or application database persistence.
+- Published court availability is not real-time occupancy or an official reservation.
+- No player authentication, profiles, matching, invitations, or scheduling yet.
+- No dedicated styled 404/500 pages or JavaScript framework required for current functionality.
+- Security findings and public-deployment controls remain under review.
+- Future work includes verified public data sources and attribution, PostgreSQL persistence, interactive maps, player coordination, notifications, and public HTTPS deployment.
+
+## 13. Related Documentation
+
+- `README.md`
+- `docs/architecture/system-overview.md`
+- `docs/architecture/kubernetes-overview.md` (if present)
+- `docs/security/security-policy.md`
+- `docs/runbooks/security-findings.md`
+- Project requirements and feature backlog documents
+
+Update this architecture document when routes, data sources, security decisions, deployment architecture, or frontend capabilities materially change. Phase 7 remains **in progress** until final review, pull request, and merge.
