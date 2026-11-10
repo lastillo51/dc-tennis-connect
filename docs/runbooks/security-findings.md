@@ -2,7 +2,7 @@
 
 > **Purpose:** Living record of security scans, investigations, remediation evidence, residual risks, and follow-up decisions.  
 > **Current project stage:** Phase 7 — Frontend Development  
-> **Latest fully dated historical scan:** 2026-10-25 (Phase 7 Semgrep and Terraform scan metadata pending)  
+> **Latest dated scan recorded:** 2026-11-08 (Phase 7 Trivy frontend image); other scan dates remain pending.  
 > **Deployment status:** Local development only; not approved for public deployment.
 
 ## 1. Current Security Overview
@@ -11,11 +11,12 @@ Update this summary when new evidence is verified. Preserve historical results i
 
 | Area | Recorded evidence | Assessment |
 |---|---|---|
-| Application tests | 42 Pytest tests passed at the last reported Phase 7 checkpoint; one dependency deprecation warning | Final Step 11H suite results pending |
+| Application tests | 42 Pytest tests passed at the recorded Phase 7 checkpoint; one dependency deprecation warning | Later security regression results still need recording |
 | Dependency consistency | `python -m pip check` passed | Passing at recorded verification |
 | Semgrep application scan | 0 findings on 2026-10-25; 1 blocking template-URL finding during Phase 7 | New finding `SEC-FE-001` under investigation; historical baseline retained |
 | Trivy targeted image rescan | 0 High/Critical findings after packaging-tool removal | Must be reconciled with full image baseline |
-| Trivy full image baseline | 164 findings, including 44 High | High findings remain outstanding for assessment |
+| Trivy full image baseline | 164 findings, including 44 High (2026-10-25) | Historical baseline; unresolved findings require triage |
+| Trivy Phase 7 frontend image | 189 recorded vulnerability findings, including 49 High (2026-11-08, Trivy 0.76.1) | Image ID recorded; confirm image identity against Docker, secret results, and report provenance; triage High findings |
 | Trivy Terraform IaC scan | 0 findings recorded; date and scanner version missing | Reported zero; evidence metadata incomplete |
 | GitHub Actions | Four jobs reported passing during Phase 6, including Terraform IaC | Run URL, commit, and tool versions still need recording; Phase 7 finding not yet verified in CI |
 | Post-remediation container runtime | No explicit evidence linked in this register | Evidence not yet recorded |
@@ -120,9 +121,58 @@ The rule flags the dynamic Jinja2 attribute `href="{{ google_maps_url }}"` as a 
 
 **Current disposition:** Investigating; likely false positive **if** the frontend obtains the URL exclusively from `build_google_maps_url(court.location)` and that function always constructs a fixed HTTPS Google Maps URL. Verification and a documented decision are still required.
 
+### 2.6 Trivy — Phase 7 Frontend Container Scan (Exercise 5)
+
+**Record status:** Vulnerability counts, scan date, and scanner version are recorded. Image identity confirmation, report provenance, and secret-scanning outcome remain to be entered. This is a separate image scan, not an update to the Phase 4 baseline.
+
+| Field | Recorded value |
+|---|---|
+| Image | `dc-tennis-connect:frontend-v1` |
+| Image ID (recorded; verify against Docker) | `sha256:e6c6ca9caecdc08e8757209ad8180f7c674627c851e776924e223b98800e1e19` |
+| Scanner version (recorded) | Trivy 0.76.1 |
+| Scan date (recorded) | 2026-11-08; exact time not recorded |
+| Scan target | Docker image archive: `/tmp/dc-tennis-frontend-v1.tar` (temporary) |
+| Command | `trivy image --input /tmp/dc-tennis-frontend-v1.tar --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL` |
+| Vulnerability report | `~/trivy-lab/frontend-v1-results.json` (local only; confirm saved) |
+| Secret scan outcome | **Pending entry:** supply finding count from completed `--scanners vuln,secret` JSON report; verify scanner execution succeeded |
+| Branch / commit | `feature/frontend-foundation`; exact commit SHA not recorded |
+| Metadata completeness | Partial — report confirmation, image identity check, secret count and commit SHA pending |
+
+#### Recorded vulnerability counts
+
+| Severity | Findings |
+|---|---:|
+| Critical | 0 |
+| High | 49 |
+| Medium | 75 |
+| Low | 65 |
+| Unknown | 0 |
+| **Total** | **189** |
+
+The counts total 189 and are preserved as supplied. **They are not a verified clean scan.** The absence of Critical findings does not remove the need to investigate the 49 High findings. The counts do not include secret findings, which require a separate review.
+
+#### Evidence still needed for final sign-off
+
+| Evidence | How to verify | Status |
+|---|---|---|
+| Image ID | `sudo docker image inspect dc-tennis-connect:frontend-v1 --format '{{.Id}}'` | Compare with recorded SHA256 |
+| Secret findings | Count `Results[].Secrets` in the completed Trivy JSON report generated with `--scanners vuln,secret` | Pending entry |
+| Report provenance | Confirm local JSON report exists and matches image, date, scanner options | Pending confirmation |
+| Git revision | `git rev-parse HEAD` on the scanned source revision, if known | Pending entry |
+| High findings | Record advisory IDs, affected packages, exposure and remediation decisions | Open |
+
+**Do not copy secret values or raw scanner reports containing sensitive data into Git.**
+
+#### Assessment and follow-up
+
+- **Historical comparison:** The Phase 4 full-image baseline (§2.1) recorded 164 findings, including 44 High. The two results concern different image builds and cannot establish a vulnerability increase or decrease without comparable scanner versions, databases, targets, and scan options.
+- **Exposure:** Local development only; public deployment remains unapproved.
+- **Next checks:** Confirm the recorded image ID against `docker image inspect`; confirm the JSON report and exact command; enter the secret-finding count from the completed dual-scanner run; inspect the 49 High advisories, fixes and exposure; record decisions per advisory or affected component.
+- **Remediation:** Rebuild and rescan after approved changes. Preserve this baseline for historical comparison.
+
 ## 3. Individual Security Findings
 
-Keep one row per actionable advisory or configuration issue. Preserve closed findings for traceability.
+Keep one row per investigated advisory or configuration issue. Preserve closed findings for traceability. The 49 High findings in the Phase 7 image are an aggregate scan count, not 49 individually triaged records.
 
 | ID | Component | Advisory | Detected version | Reported fix | Current status |
 |---|---|---|---|---|---|
@@ -239,7 +289,11 @@ Implemented controls include separate jobs, push/PR checks, read-only repository
 
 The user reported that all four CI jobs passed during Phase 6. Record the Terraform job run URL, commit SHA, tool versions, and any differences from the local IaC scan to complete the evidence trail. The Phase 7 Semgrep finding requires its own review and subsequent CI verification.
 
-### 4.3 CI Limitations
+### 4.3 Phase 7 Frontend CI — Verification Pending
+
+The frontend branch was originally excluded from `push` triggers (`main`, `security/**`, and `infra/**`). A `feature/**` trigger was recommended, but the current register does not establish whether that workflow change was committed or whether a subsequent run passed. Record the run URL, commit SHA, and outcomes for Pytest, Semgrep, Trivy, and Terraform before declaring Phase 7 CI verified.
+
+### 4.4 CI Limitations
 
 - Passing security jobs does not prove the absence of vulnerabilities.
 - Scanner results may vary by tool version, rules, databases, and target contents.
@@ -257,7 +311,7 @@ The user reported that all four CI jobs passed during Phase 6. Record the Terraf
 | Low | Review during routine maintenance |
 | Unknown | Investigate context and classify where possible |
 
-**Current decisions:** Continue local development, but do not approve public deployment based on current evidence. Keep container-image Trivy findings report-only until the baseline is reconciled. Treat 44 High findings as outstanding for triage. Defer branch protection while manually reviewing CI results.
+**Current decisions:** Continue local development; public deployment is not approved. Keep container-image Trivy findings report-only pending a reconciled baseline and risk-based enforcement decision. The historical 44 High findings and the Phase 7 image’s 49 recorded High findings both require assessment; do not add them together as unique vulnerabilities. Defer branch protection while manually reviewing CI results.
 
 Deferral is **not** remediation or formal risk acceptance. A formal exception must identify the finding, justification, compensating controls, accountable reviewer, and reassessment date.
 
@@ -280,6 +334,8 @@ Deferral is **not** remediation or formal risk acceptance. A formal exception mu
 | ACT-013 | Investigate and disposition `SEC-FE-001` | High | Investigating | URL data flow, negative test, Semgrep rescan, reviewer decision and date |
 | ACT-014 | Record Phase 7 Semgrep scan metadata | Low | Open | Date, version, branch/commit, scan output |
 | ACT-015 | Complete Step 11H final security regression evidence | Medium | Pending | Targeted and full test counts, dependency check, Semgrep rescan and SEC-FE-001 disposition |
+| ACT-016 | Complete Phase 7 frontend image scan evidence and secret review | High | Partially recorded | Date/version recorded; verify image ID and JSON report, enter secret count and commit SHA |
+| ACT-017 | Triage Phase 7 frontend image High findings | High | Open | Review 49 recorded High findings, affected components, fixes, exposure and decisions |
 
 ## 7. Scan History and Repeatable Workflow
 
@@ -295,7 +351,8 @@ Append new rows; do not overwrite older results. A dash means not applicable or 
 | 2026-10-25 | Semgrep `p/security-audit` | `app/` | — | — | — | — | — | 0 total findings; §2.3 |
 | Not recorded | Trivy Terraform IaC | `terraform/` | 0 | 0 | 0 | 0 | 0 | Reported 0; metadata incomplete; §2.4 |
 | Not recorded | Semgrep `p/security-audit`, Phase 7 | `app/` | — | — | — | — | — | 1 blocking finding `SEC-FE-001`; severity counts not recorded; §2.5 |
-<!-- Append a separate dated Phase 7 Semgrep rescan row after executing Step 11H; do not overwrite the initial finding. -->
+| 2026-11-08 | Trivy image, Phase 7 frontend | `dc-tennis-connect:frontend-v1` | 0 | 49 | 75 | 65 | 0 | 189 recorded vulnerabilities; version 0.76.1; secret results and image ID confirmation pending; §2.6 |
+**Pending:** Append a separate dated Phase 7 Semgrep rescan row when its result is recorded. Do not overwrite the initial finding.
 
 ### 7.2 Procedure for Future Scans
 

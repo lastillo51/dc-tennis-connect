@@ -1,6 +1,6 @@
 # DC Tennis Connect — DevSecOps Security Policy
 
-**Current project phase:** Phase 7 — Frontend Development  
+**Current project phase:** Phase 7 — Frontend Development (Exercise 5: quality and deployment compatibility)  
 **Deployment status:** Local development; not approved for public production deployment.
 
 ## 1. Purpose
@@ -49,25 +49,27 @@ All application and infrastructure changes should:
 
 ### 4.1 Frontend Application Security — Phase 7
 
-These requirements apply to the planned FastAPI/Jinja2 frontend and must be verified as the corresponding pages and routes are implemented.
+These requirements apply to the implemented FastAPI/Jinja2 homepage, court directory, and court detail pages, and to future browser-facing features. The existing frontend uses fictional court records and does not provide player accounts or reservations.
 
 **Input handling**
 
 - Validate and constrain search terms, filters, path parameters, and query parameters.
 - Treat browser input and external court information as untrusted.
-- Avoid reflecting unvalidated values into rendered pages.
+- Validate search length and boolean filters, and type-check court IDs; reject malformed requests with appropriate HTTP status codes.
+- Escape reflected values in HTML output, including court names, addresses, and search terms.
 - Return understandable errors without disclosing internal implementation details.
 
 **Template rendering**
 
 - Use Jinja2 HTML autoescaping for untrusted content.
 - Do not use `|safe`, `Markup`, or equivalent bypasses on untrusted values.
-- Do not interpolate untrusted values into executable JavaScript, HTML event handlers, or unsafe URL contexts.
+- Do not interpolate untrusted values into executable JavaScript, HTML event handlers, or unsafe URL contexts. HTML escaping alone does not prevent unsafe URL schemes.
 - Keep business logic in application services rather than templates.
 
 **External navigation**
 
-- Generate Google Maps destination links using the existing approved URL-generation logic.
+- Generate Google Maps directions using `app/api/services/maps_service.py` and `build_google_maps_url(court.location)`, which must construct a fixed HTTPS Google Maps origin and URL-encode destination data.
+- Do not render unvalidated `court.google_maps_url` values or other arbitrary external URLs as navigation targets.
 - Do not accept arbitrary user-supplied redirect destinations.
 - For links opening new tabs, use `rel="noopener noreferrer"` with `target="_blank"`.
 - Do not require collection of the user's precise location for basic directions links.
@@ -80,7 +82,9 @@ These requirements apply to the planned FastAPI/Jinja2 frontend and must be veri
 
 **Browser security**
 
-- Evaluate Content Security Policy and appropriate response headers as the frontend is implemented; test compatibility before enforcement.
+- Evaluate and test `X-Content-Type-Options: nosniff`, `Referrer-Policy`, and frame protection through `X-Frame-Options` or CSP `frame-ancestors`.
+- Evaluate Content Security Policy (CSP) in report-only mode before enforcement; confirm compatibility with templates, CSS, and navigation.
+- Enable HSTS only when public HTTPS is correctly configured; do not apply it to local HTTP development.
 - Use secure cookie settings and CSRF defenses when sessions and state-changing browser forms are introduced.
 - Avoid exposing stack traces or debug details in user-facing error pages.
 
@@ -92,7 +96,7 @@ These requirements apply to the planned FastAPI/Jinja2 frontend and must be veri
 
 **Verification**
 
-- Add Pytest coverage for web routes, template rendering, input handling, missing records, and navigation links.
+- Maintain Pytest coverage for web routes, template rendering, HTML escaping, input validation, missing records, Google Maps URL construction, and navigation links.
 - Continue Semgrep, Trivy container, and GitHub Actions checks.
 - Manually inspect rendered output for escaping, safe external links, and accessibility behavior.
 
@@ -120,7 +124,8 @@ The Terraform checks were added in Phase 6. Verify the current workflow file whe
 - Introduce reviewed, risk-based vulnerability enforcement.
 - Improve scan reporting and historical comparison.
 - Expand Kubernetes-specific configuration security checks.
-- Add frontend route and template tests as Phase 7 features are implemented.
+- Maintain frontend route, template, accessibility, and security regression tests as new features are implemented.
+- Extend push-trigger coverage to active feature branches when appropriate; preserve pull-request checks targeting `main`.
 
 ### 5.3 Branch Protection
 
@@ -155,6 +160,10 @@ Severity alone does not establish exploitability. Assess affected components, ex
 
 Scan results, remediation evidence, and outstanding risks are maintained in `docs/runbooks/security-findings.md`. This policy defines requirements; the findings register records observations and decisions.
 
+**Phase 7 findings:** `SEC-FE-001` concerns a dynamic Jinja2 Google Maps `href`. Its proposed false-positive disposition requires evidence that the URL is exclusively generated by the trusted fixed-origin Maps service, passing negative tests, an accountable reviewer, and a recorded reassessment date. Do not suppress the entire Semgrep ruleset to address one finding.
+
+The Phase 7 frontend image scan recorded 189 vulnerabilities, including 49 High and 0 Critical. These are recorded findings requiring triage, not a clean bill of health. Preserve historical image baselines separately; confirm image identity, scanner configuration, and scan metadata before comparing counts. A successful report-only Trivy job does not constitute remediation or risk acceptance.
+
 ## 7. Security Exceptions and Risk Acceptance
 
 | Field | Required information |
@@ -168,7 +177,7 @@ Scan results, remediation evidence, and outstanding risks are maintained in `doc
 | Review date | Reassessment date |
 | Status | Current exception status |
 
-Review exceptions periodically. Risk acceptance does not mean a vulnerability is resolved and must not conceal findings.
+Review exceptions periodically. Risk acceptance does not mean a vulnerability is resolved and must not conceal findings. A scanner false positive requires evidence of inapplicability, not merely an acceptance of exposure. Document narrowly scoped suppressions, if any, with their rule, rationale, reviewer, and review date.
 
 ## 8. Container and Infrastructure Security
 
@@ -176,7 +185,7 @@ Review exceptions periodically. Risk acceptance does not mean a vulnerability is
 
 Containerized services should run as non-root where practical, minimize runtime packages, exclude embedded secrets, use maintained base images, limit published ports, separate application and database services, preserve necessary data, and undergo vulnerability scanning.
 
-### 8.2 Planned Container Hardening
+### 8.2 Further Container Hardening
 
 - Evaluate multi-stage builds and residual image-layer exposure.
 - Pin base images to verified digests.
@@ -210,11 +219,13 @@ Before storing real player information, implement appropriate authentication, au
 
 ## 10. GitHub Actions Security
 
-Workflows should use least-privilege token permissions, avoid unnecessary secrets, use trusted third-party actions, apply timeouts and concurrency controls, and fail when required tests or scanner execution fails. Pin third-party actions to verified commit SHAs as part of future hardening. Review workflow changes before merging.
+Workflows should use least-privilege token permissions, avoid unnecessary secrets, use trusted third-party actions, apply timeouts and concurrency controls, and fail when required tests or scanner execution fails. The current workflow supports push filters for `main`, `security/**`, `infra/**`, and, after the Phase 7 trigger update, `feature/**`; it also supports pull requests targeting `main` and manual dispatch. Verify the committed workflow before relying on a trigger. Pin third-party actions to verified commit SHAs as part of future hardening. Review workflow changes before merging.
+
+Do not treat a successful job as proof of zero findings. A blocking Semgrep result requires remediation or a reviewed, documented, narrowly scoped disposition consistent with CI enforcement before merge.
 
 ## 11. Deployment Security Requirements
 
-The application is currently intended for local development. Before public deployment, review and implement appropriate controls for authentication and authorization, HTTPS, network exposure, production secrets, database security, outstanding vulnerabilities, logging, monitoring, backups, recovery, CI enforcement, browser security, and user data protection.
+The application is currently intended for local development. Local Docker and kind verification does not establish production readiness. Before public deployment, review and implement appropriate controls for authentication and authorization, HTTPS, network exposure, production secrets, database security, outstanding vulnerabilities, logging, monitoring, backups, recovery, CI enforcement, browser security, and user data protection.
 
 A successful CI workflow does not automatically authorize production deployment.
 
@@ -239,6 +250,7 @@ Review this policy when a technology or significant feature is introduced, secur
 |---|---|---|---|
 | 2026-10-26 | Phase 4 | Reorganized policy and documented initial DevSecOps controls | Historical entry (previously marked proposed) |
 | 2026-11-04 | Phase 7 | Integrated frontend security requirements and updated Phase 5–6 control descriptions | Draft — pending review and merge |
+| 2026-11-09 | Phase 7 Exercise 5 | Clarified implemented frontend controls, SEC-FE-001 review, Trivy triage, browser headers, accessibility, and feature-branch CI | Proposed — pending review and merge |
 
 Update status and date when a revision is actually approved and merged.
 
@@ -250,7 +262,7 @@ Update status and date when a revision is actually approved and merged.
 | `docs/architecture/system-overview.md` | Application architecture and security design |
 | `docs/architecture/kubernetes-overview.md` | Local Kubernetes architecture |
 | `docs/architecture/terraform-overview.md` | Terraform foundation and state approach |
-| `docs/architecture/frontend-overview.md` | Phase 7 frontend design (planned document) |
+| `docs/architecture/frontend-overview.md` | Implemented Phase 7 frontend architecture and remaining work |
 | `.github/workflows/security-ci.yml` | Automated testing and security scanning |
 | `docker/Dockerfile` | FastAPI container build configuration |
 | `docker/compose.yaml` | Local application and database services |
