@@ -1,6 +1,7 @@
 # DC Tennis Connect — System Architecture
 
-> **Current stage:** Phase 7 — Frontend Development, Exercise 5  
+> **Current stage:** Phase 7 — Completed; frontend merged into `main`  
+> **Next stage:** Phase 8 — PostgreSQL application persistence and real public court data  
 > **Deployment scope:** Local development and testing; not approved for public production deployment.  
 > **Document purpose:** Describe implemented architecture, planned components, and the boundaries between them.
 
@@ -215,8 +216,8 @@ Public deployment should be gated on verified operational and security readiness
 | Area | Status |
 |---|---|
 | Phases 1–6 local DevSecOps foundations | Completed |
-| Phase 7 frontend pages, court search, details, Maps navigation | Implemented; Phase 7 final review pending |
-| Phase 7 accessibility, security and deployment hardening | Exercise 5 verification/documentation in progress |
+| Phase 7 frontend pages, court search, details, Maps navigation | Implemented, verified, and merged into `main` |
+| Phase 7 accessibility, security and deployment hardening | Local implementation and verification completed; outstanding Semgrep/Trivy findings remain tracked |
 | Phase 8 real court data and PostgreSQL persistence | Planned |
 | Phase 9 player accounts and scheduling | Planned |
 | Phase 10 cloud deployment | Planned |

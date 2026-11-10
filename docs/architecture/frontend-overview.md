@@ -1,6 +1,7 @@
 # DC Tennis Connect — Frontend Architecture
 
-> **Project stage:** Phase 7 — Frontend Development (Exercise 5: quality, security, and deployment compatibility)  
+> **Project stage:** Phase 7 — Frontend implementation completed and merged into `main`  
+> **Next milestone:** Phase 8 — PostgreSQL integration and verified public court data  
 > **Implementation:** Server-rendered FastAPI/Jinja2 frontend using fictional court data  
 > **Deployment:** Local development and local Docker/kind verification; not approved for public deployment
 
@@ -199,4 +200,4 @@ Terraform currently provides a local infrastructure-as-code learning foundation;
 - `docs/runbooks/security-findings.md`
 - Project requirements and feature backlog documents
 
-Update this architecture document when routes, data sources, security decisions, deployment architecture, or frontend capabilities materially change. Phase 7 remains **in progress** until final review, pull request, and merge.
+Update this architecture document when routes, data sources, security decisions, deployment architecture, or frontend capabilities materially change. Phase 7 frontend implementation, verification, and pull request integration are complete. Future changes to routes, templates, accessibility, security controls, and deployment behavior will be documented as the application evolves. Outstanding security findings remain tracked separately.

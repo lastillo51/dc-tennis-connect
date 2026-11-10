@@ -1,6 +1,7 @@
 # DC Tennis Connect — DevSecOps Security Policy
 
-**Current project phase:** Phase 7 — Frontend Development (Exercise 5: quality and deployment compatibility)  
+**Current project phase:** Phase 7 — Completed  
+**Next project phase:** Phase 8 — PostgreSQL application persistence and real public court data  
 **Deployment status:** Local development; not approved for public production deployment.
 
 ## 1. Purpose
@@ -249,8 +250,8 @@ Review this policy when a technology or significant feature is introduced, secur
 | Date | Phase | Change | Status |
 |---|---|---|---|
 | 2026-10-26 | Phase 4 | Reorganized policy and documented initial DevSecOps controls | Historical entry (previously marked proposed) |
-| 2026-11-04 | Phase 7 | Integrated frontend security requirements and updated Phase 5–6 control descriptions | Draft — pending review and merge |
-| 2026-11-09 | Phase 7 Exercise 5 | Clarified implemented frontend controls, SEC-FE-001 review, Trivy triage, browser headers, accessibility, and feature-branch CI | Proposed — pending review and merge |
+| 2026-11-04 | Phase 7 | Integrated frontend security requirements and updated Phase 5–6 control descriptions | Merged into `main` as part of Phase 7 |
+| 2026-11-09 | Phase 7 Exercise 5 | Clarified implemented frontend controls, SEC-FE-001 review, Trivy triage, browser headers, accessibility, and feature-branch CI | Merged into `main` as part of Phase 7 |
 
 Update status and date when a revision is actually approved and merged.
 

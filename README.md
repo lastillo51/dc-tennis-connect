@@ -2,9 +2,9 @@
 
 **A Washington, D.C. tennis court discovery and player coordination platform — built as a hands-on DevSecOps learning project.**
 
-**Current development phase:** Phase 7 — Frontend Development  
-**Current milestone:** Exercise 5 — Frontend quality, accessibility, security hardening, deployment compatibility, and documentation  
-**Project status:** Active development; Phase 7 not yet merged into `main`  
+**Current development phase:** Phase 7 — Completed  
+**Next development phase:** Phase 8 — PostgreSQL application persistence and real public court data  
+**Project status:** Active development; Phase 7 merged into `main`  
 **Deployment status:** Local development and local kind Kubernetes; not approved for public deployment
 
 ## 1. Project Overview
@@ -221,13 +221,13 @@ The project remains **local-development only** and is **not approved for public 
 | 4 | Security scanning and GitHub Actions | Complete |
 | 5 | Kubernetes with kind | Complete |
 | 6 | Terraform and infrastructure as code | Complete |
-| 7 | Frontend implementation and hardening | In progress — Exercise 5 |
+| 7 | Frontend implementation and hardening | Completed |
 | 8 | PostgreSQL application persistence and real court data | Planned |
 | 9 | Player accounts, matching, and scheduling | Planned |
 | 10 | Public cloud deployment | Planned |
 | 11 | Production security and operational readiness | Planned |
 
-**Phase 7 completed work:** frontend planning, homepage, directory, search/filtering, court detail pages, Maps navigation, accessibility improvements, security reviews, and local deployment checks. Exercise 6 will cover final review, pull request, merge, repository synchronization, and VMware snapshot.
+**Phase 7 completed work:** frontend planning, homepage, directory, search/filtering, court detail pages, Maps navigation, accessibility improvements, security reviews, and local deployment checks. The Phase 7 pull request was squash-merged into `main`, and the feature branches were removed. The project remains in local development; outstanding security findings are tracked separately.
 
 ## 11. Cloud Deployment Goal
 
@@ -254,4 +254,4 @@ Potential later costs include cloud hosting, database storage, domains, SMS deli
 
 Application requirements, architecture, feature backlog, security policies, scan findings, infrastructure configuration, and runbooks are maintained separately and version-controlled through GitHub.
 
-Update documentation when implementation or security decisions change. Phase 7 changes remain on `feature/frontend-foundation` until the Exercise 6 pull request and merge are complete.
+Update documentation when implementation or security decisions change. Phase 7 changes are merged into `main`. Begin Phase 8 work on a new feature branch after reviewing the requirements and security backlog.
