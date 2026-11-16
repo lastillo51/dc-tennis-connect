@@ -1,7 +1,7 @@
 # DC Tennis Connect — Frontend Architecture
 
 > **Project stage:** Phase 7 — Frontend implementation completed and merged into `main`  
-> **Next milestone:** Phase 8 — PostgreSQL integration and verified public court data  
+> **Current milestone:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
 > **Implementation:** Server-rendered FastAPI/Jinja2 frontend using fictional court data  
 > **Deployment:** Local development and local Docker/kind verification; not approved for public deployment
 
@@ -190,6 +190,15 @@ Terraform currently provides a local infrastructure-as-code learning foundation;
 - No dedicated styled 404/500 pages or JavaScript framework required for current functionality.
 - Security findings and public-deployment controls remain under review.
 - Future work includes verified public data sources and attribution, PostgreSQL persistence, interactive maps, player coordination, notifications, and public HTTPS deployment.
+
+## Phase 8 — Planned Database-Backed Frontend Integration
+
+The Phase 7 routes and Jinja2 templates remain implemented. In Phase 8, the shared court service will transition from `sample_courts` to a repository backed by PostgreSQL, while preserving the current court API schema, directory search, public-only filter, detail page, and Google Maps URL service.
+
+**Proposed flow:** Browser → FastAPI web route → court service → repository → PostgreSQL → Pydantic court representation → Jinja2. Templates must not query PostgreSQL directly. Source attribution and last-verified information will be displayed when real data is imported; missing operating hours or closures remain unknown. The app will not represent published hours as a guarantee of a free court.
+
+During migration, maintain fictional fixtures for deterministic tests. Add integration tests for database-backed listing, searching, missing records, and source display before removing the production dependency on sample data. No database-backed frontend behavior is claimed as implemented during Exercise 1.
+
 
 ## 13. Related Documentation
 

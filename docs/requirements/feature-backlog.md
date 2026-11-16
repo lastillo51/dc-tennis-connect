@@ -6,9 +6,9 @@ This document tracks implemented, planned, and future functionality for DC Tenni
 
 The feature backlog supports incremental application development and ensures that new features can be introduced without unnecessarily disrupting existing components.
 
-**Current Development Phase:** Phase 7 — Completed
+**Current Development Phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)
 
-**Next Development Phase:** Phase 8 — PostgreSQL application persistence and real public court data. Phase 7 frontend work has been squash-merged into `main`.
+**Previous Phase:** Phase 7 — Completed and merged into `main`.
 
 ## 2. Feature Management Principles
 
@@ -181,6 +181,28 @@ The following features remain outside Phase 7:
 
 These features will be introduced in later phases.
 
+## Phase 8 — Database and Real Court Data Backlog
+
+These `DB-XXX` task identifiers are distinct from the existing application (`FB-XXX`) and frontend (`FE-XXX`) identifiers. A planning task does not establish implementation completion.
+
+| ID | Task | Status | Exercise |
+|---|---|---|---|
+| DB-001 | Database architecture and documentation | In Progress | 1 |
+| DB-002 | PostgreSQL connectivity and configuration | Planned | 2 |
+| DB-003 | SQLAlchemy court models and constraints | Planned | 3 |
+| DB-004 | Alembic migrations | Planned | 3 |
+| DB-005 | Court repository layer | Planned | 4 |
+| DB-006 | Database-backed JSON API and Jinja2 pages | Planned | 4 |
+| DB-007 | Public court source evaluation and permitted reuse | Planned | 5 |
+| DB-008 | Validated, repeatable public data import | Planned | 5 |
+| DB-009 | Database security and regression testing | Planned | 5–6 |
+| DB-010 | Final review, pull request, merge, and snapshot | Planned | 6 |
+
+**Acceptance constraints:** Keep the existing API schema and frontend behavior; use source URLs and verification timestamps; distinguish published hours from actual occupancy; reject invalid or duplicate imports; protect database credentials; and do not mark real-data features completed until imported records have been verified.
+
+`FB-002`, `FB-003`, `FB-004`, and `FB-006` remain partially implemented or planned until Phase 8 data requirements are satisfied. `FB-001` and `FB-005` retain their Phase 7 completed status.
+
+
 ## 6. Feature Status Definitions
 
 | Status | Definition |
@@ -274,7 +296,7 @@ Security controls will expand as authentication, persistent user information, an
 | Phase 5 | Kubernetes with kind | Complete |
 | Phase 6 | Terraform and Infrastructure as Code | Complete |
 | Phase 7 | Responsive frontend development | Completed |
-| Phase 8 | PostgreSQL integration and real court data | Planned |
+| Phase 8 | PostgreSQL integration and real court data | In Progress — planning |
 | Phase 9 | Player accounts and match scheduling | Planned |
 | Phase 10 | Cloud deployment and public HTTPS access | Planned |
 | Phase 11 | Production security and operational readiness | Planned |
@@ -301,8 +323,8 @@ This document shall be reviewed when:
 
 ## 11. Current Project Status
 
-**Current Phase:** Phase 7 — Completed  
-**Next Phase:** Phase 8 — PostgreSQL application persistence and real public court data  
+**Current Phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
+**Previous Phase:** Phase 7 — Completed  
 **Repository baseline:** Phase 7 frontend pull request squash-merged into `main`; local and remote `main` synchronized, and frontend feature branches removed.
 
 ### Completed Phase 7 Scope

@@ -1,7 +1,7 @@
 # DC Tennis Connect — System Architecture
 
-> **Current stage:** Phase 7 — Completed; frontend merged into `main`  
-> **Next stage:** Phase 8 — PostgreSQL application persistence and real public court data  
+> **Current stage:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
+> **Previous stage:** Phase 7 — Completed; frontend merged into `main`  
 > **Deployment scope:** Local development and testing; not approved for public production deployment.  
 > **Document purpose:** Describe implemented architecture, planned components, and the boundaries between them.
 
@@ -224,6 +224,19 @@ Public deployment should be gated on verified operational and security readiness
 | Phase 11 production security and operations | Planned |
 
 Update this document when an implemented route, component, data source, deployment mechanism, or security boundary changes. Keep historical verification evidence in the relevant runbooks and do not silently replace planned capabilities with claims of implementation.
+
+## Phase 8 — Proposed Persistence Architecture
+
+**Status:** Design only; Phase 7 still reads fictional in-memory court records.
+
+The proposed data path is FastAPI web/JSON routes → shared court service → repository layer (SQLAlchemy 2.x) → PostgreSQL (Psycopg 3). Alembic will manage reviewed, version-controlled migrations. Database models will be mapped to the existing Pydantic `Court` representation to preserve the JSON API and Jinja2 pages.
+
+Initial persistent entities are **courts** (identity, address, coordinates, court count, access and availability classification, timestamps) and **court_sources** (publisher, source identifier/URL, verification timestamp). Day-specific operating hours and closures will be added after source formats are evaluated. Google Maps URLs remain derived from trusted location fields, not accepted as arbitrary redirect URLs.
+
+The existing Docker Compose PostgreSQL service will be inspected and reused where appropriate. Local Kubernetes integration is a separate validation step; Terraform currently does not provision production database infrastructure. Authentication, player scheduling, and public cloud database hosting remain future phases.
+
+**Data trust boundary:** Import only information whose use is authorized; validate fields and duplicate keys; retain provenance; distinguish published hours from physical availability. See `docs/architecture/database-overview.md` for the planned schema and migration lifecycle.
+
 
 ## 11. Related Documentation
 

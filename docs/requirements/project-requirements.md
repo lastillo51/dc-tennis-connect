@@ -1,412 +1,345 @@
-# DC Tennis Connect — Project Requirements
-
-**Current development phase:** Phase 7 — Completed  
-**Next development phase:** Phase 8 — PostgreSQL application persistence and real public court data  
-**Document scope:** Application-wide requirements and Phase 7 frontend MVP  
-**Status:** Living requirements; implementation status is tracked separately
+# DC Tennis Connect — Feature Backlog
 
 ## 1. Purpose
 
-DC Tennis Connect will provide a centralized platform for discovering public tennis courts, reviewing publicly available court schedules, coordinating hitting sessions, and finding compatible hitting partners in Washington, D.C.
+This document tracks implemented, planned, and future functionality for DC Tennis Connect.
 
-The application will use reliable public information to help players identify potential playing times.
+The feature backlog supports incremental application development and ensures that new features can be introduced without unnecessarily disrupting existing components.
 
-Players will schedule matches around published operating hours, reservation information, and known court restrictions.
+**Current Development Phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)
 
-DC Tennis Connect will not independently reserve public courts or guarantee real-time physical availability.
+**Previous Phase:** Phase 7 — Completed and merged into `main`.
 
-## 2. Target Users
+## 2. Feature Management Principles
 
-- Recreational tennis players.
-- Players seeking public tennis courts.
-- Players looking for compatible hitting partners.
-- Players coordinating matches around published court schedules.
-- Players unfamiliar with court locations in Washington, D.C.
+- Develop features incrementally.
+- Prioritize functionality based on user needs and project goals.
+- Maintain modular and extensible application components.
+- Update requirements and architecture documentation when functionality changes.
+- Evaluate security, privacy, testing, accessibility, and cost implications.
+- Use dedicated Git branches for development.
+- Review changes through GitHub pull requests.
+- Preserve existing functionality and API compatibility.
+- Verify features before marking them completed.
 
-## 3. Functional Requirements
+### Feature Tracking
 
-Requirements FR-001 through FR-011 describe the broader application. FR-012 through FR-018 define the Phase 7 browser interface and reuse the existing backend where applicable. Requirements for later phases remain planned, not implemented.
+The backlog uses two types of identifiers:
 
-### FR-001: Responsive Web Access
+| Identifier | Purpose |
+|---|---|
+| `FB-XXX` | Tracks application features across development phases |
+| `FE-XXX` | Tracks implementation tasks specific to Phase 7 frontend development |
 
-The application shall support modern desktop and mobile browsers on Windows, macOS, iOS, and Android.
+Feature identifiers shall remain stable.
 
-### FR-002: Public Court Directory
+Completing a Phase 7 task does not automatically mean its corresponding application feature is fully implemented.
 
-The application shall provide a directory of public tennis courts in Washington, D.C.
+## 3. Feature Priorities
 
-Court information shall include, where available:
-
-- Court name.
-- Physical address.
-- Geographic coordinates.
-- Number of courts.
-- Court surface type.
-- Published operating hours.
-- Reservation policies.
-- Known closures.
-- Public information source.
-
-### FR-003: Public Court Schedule and Availability
-
-The application shall display court operating hours, reservation information, and closures obtained from reliable, authorized public sources.
-
-The application shall:
-
-- Display published operating hours by date.
-- Display verified reservation availability when publicly accessible.
-- Identify courts operating on a first-come, first-served basis.
-- Display published closures and restrictions.
-- Identify unavailable or outdated scheduling information.
-- Record the source and last verification time for schedule information.
-- Clearly distinguish published operating hours from confirmed reservation availability.
-
-The application shall not represent a court as guaranteed available solely because it is within published operating hours.
-
-### FR-004: Player Profiles
-
-Users shall be able to create and manage player profiles.
-
-Profiles should include:
-
-- Display name.
-- Tennis skill level.
-- General playing availability.
-- Preferred playing locations.
-
-### FR-005: Skill Ratings
-
-Users shall be able to specify their tennis skill level.
-
-Skill ratings may use self-reported NTRP-style ratings or simplified beginner, intermediate, and advanced classifications.
-
-### FR-006: Hitting Partner Matching
-
-Users shall be able to find compatible hitting partners based on:
-
-- Tennis skill level.
-- Preferred playing times.
-- Preferred court locations.
-- Availability for proposed sessions.
-
-### FR-007: Notifications
-
-The application should support email and SMS notifications for:
-
-- Match invitations.
-- Accepted or declined invitations.
-- Match scheduling updates.
-- Relevant published court schedule changes.
-
-Notification functionality will be introduced incrementally.
-
-### FR-008: Optional Social Features
-
-Future versions may include:
-
-- Social media integration.
-- In-app messaging.
-- Court ratings and reviews.
-- Player connections.
-
-### FR-009: Court Location and Google Maps Navigation
-
-The application shall display the geographic location of each listed tennis court and provide navigation through Google Maps.
-
-Requirements:
-
-- Display court names and physical addresses.
-- Store verified geographic coordinates where available.
-- Provide a Get Directions option.
-- Open Google Maps with the selected court as the destination.
-- Support desktop and mobile browsers.
-- Use Google Maps URLs without requiring paid mapping APIs.
-- Allow users to access directions without creating an account.
-
-### FR-010: Player Match Scheduling
-
-The application shall allow registered players to coordinate hitting sessions using publicly available court scheduling information.
-
-Users shall be able to:
-
-- Select a tennis court.
-- Review published operating hours and known restrictions.
-- Choose a proposed playing date and time.
-- Invite another player.
-- Accept or decline match invitations.
-- View upcoming scheduled matches.
-- Cancel proposed or accepted matches.
-
-The application shall distinguish proposed matches from mutually accepted matches.
-
-Scheduling a match shall not be represented as a confirmed court reservation.
-
-### FR-011: Court Schedule Data Management
-
-The application shall support maintaining court scheduling information obtained from authorized public sources.
-
-The system shall support:
-
-- Recording original data sources.
-- Importing or updating published schedules.
-- Recording verification timestamps.
-- Detecting changes where feasible.
-- Flagging outdated or missing information.
-- Preventing unsupported claims of real-time availability.
-
-Automated data retrieval may be introduced after verifying that the relevant source permits it.
-
-### Phase 7 — Frontend Interface Requirements
-
-The following requirements apply to the initial server-rendered frontend using FastAPI and Jinja2. During Phase 7, the interface uses fictional court records; real court data, database persistence, authentication, and player scheduling remain deferred. Existing JSON API routes must remain functional.
-
-### FR-012: Frontend Homepage
-
-The application shall provide a browser-accessible homepage introducing DC Tennis Connect and its court discovery functionality.
-
-### FR-013: Court Directory Interface
-
-The application shall display tennis court information using the existing backend court service layer.
-
-### FR-014: Court Search and Filtering
-
-Users shall be able to search and filter available court records using supported court attributes.
-
-The interface shall not imply that filtering by public access or operating hours guarantees physical court availability.
-
-### FR-015: Court Detail Pages
-
-Users shall be able to view individual court details, including court name, location, available facility information, and relevant scheduling information.
-
-Unavailable or unverified fields shall be clearly identified or omitted as appropriate.
-
-### FR-016: Google Maps Navigation
-
-Court detail pages shall expose the Google Maps directions capability specified by FR-009, reusing the existing backend navigation URL generation functionality rather than implementing a second mapping mechanism. No paid Google Maps API is required for the initial implementation.
-
-### FR-017: Frontend Error Handling
-
-The interface shall provide understandable messages for:
-
-- Missing court records.
-- Empty search results.
-- Invalid user input.
-- Unavailable application data.
-
-### FR-018: Progressive Enhancement
-
-Core court discovery functionality shall remain usable without client-side JavaScript where practical.
-
-JavaScript may enhance interactions without becoming a requirement for basic navigation.
-
-## 4. Nonfunctional Requirements
-
-### NFR-001: Security
-
-The application shall follow secure development practices, including authentication, authorization, input validation, and protection of user information.
-
-### NFR-002: Maintainability
-
-Application components shall be organized into logical modules.
-
-### NFR-003: Portability
-
-The application shall support local development and future containerized deployment.
-
-### NFR-004: Reliability and Data Accuracy
-
-The application shall distinguish published operating hours from verified reservation availability.
-
-Outdated, missing, or unverified scheduling information shall be clearly identified.
-
-### NFR-005: Testability
-
-Core application functionality shall support automated unit and integration testing.
-
-### NFR-006: Observability
-
-Future deployments should support logging, health monitoring, and troubleshooting.
-
-### NFR-007: Mapping and Navigation Compatibility
-
-Google Maps navigation shall function across supported desktop and mobile browsers without requiring paid mapping APIs for the MVP.
-
-### NFR-008: Data Source Transparency
-
-Court scheduling information shall identify its original source and last verification time.
-
-### NFR-009: Scheduling Integrity
-
-The application shall:
-
-- Reject proposed match times in the past.
-- Prevent scheduling outside known operating hours.
-- Prevent scheduling during verified closures.
-- Identify conflicts with a player's accepted matches.
-- Flag known reservation conflicts.
-- Warn users when availability is unknown.
-
-An internally scheduled match shall not be treated as proof of a court reservation.
-
-### NFR-010: Privacy
-
-Player profiles, match invitations, and availability preferences shall be protected through appropriate access controls.
-
-The application shall minimize the collection and storage of precise user location information.
-
-### Phase 7 — Frontend Nonfunctional Requirements
-
-The following requirements supplement the application-wide requirements above. NFR-011 refines FR-001 for frontend layouts; NFR-013 supplements NFR-001; NFR-014 supplements NFR-002; and NFR-015 supplements NFR-005.
-
-### NFR-011: Responsive Design
-
-The frontend shall adapt its layout and controls to modern desktop and mobile browsers, consistent with FR-001.
-
-### NFR-012: Accessibility
-
-The frontend shall use semantic HTML, keyboard-accessible controls, visible focus indicators, readable text, and appropriately labeled form elements.
-
-WCAG 2.2 Level AA shall be the target for future accessibility verification.
-
-### NFR-013: Frontend Security
-
-The frontend shall escape untrusted content, validate query parameters, and avoid exposing secrets or internal application details.
-
-### NFR-014: Frontend Maintainability
-
-Templates, stylesheets, static assets, and frontend routes shall be organized into separate logical components.
-
-### NFR-015: Frontend Testability
-
-Frontend routes, template rendering, filtering, and error responses shall be supported by automated tests.
-
-## 5. MVP Scope
-
-### 5.1 Broader Application MVP (Planned)
-
-The broader application MVP shall include:
+### Must Have
 
 - Responsive web application.
 - Public tennis court directory.
-- Court names, addresses, and verified coordinates where available.
-- Published court operating hours.
-- Known closures and reservation policies.
+- Court addresses and geographic locations.
+- Published operating hours and known closures.
 - Court scheduling classifications.
-- Public schedule source attribution.
-- Google Maps directions.
-- Basic court and date selection.
+- Google Maps navigation.
+- Public court information source attribution.
 
-The initial MVP may use clearly labeled sample scheduling information during development.
-
-The next functional iteration will introduce:
+### Should Have
 
 - Player registration and profiles.
-- Skill ratings.
+- Tennis skill ratings.
 - Player availability preferences.
-- Match invitations and acceptance.
-- Basic player match scheduling.
+- Hitting partner matching.
+- Match invitations.
+- Player match scheduling.
+- Email and SMS notifications.
 
-Later iterations will introduce notifications, enhanced matching, and automated schedule updates.
+### Could Have
 
-### 5.2 Phase 7 Frontend MVP (Current Milestone)
+- In-app messaging.
+- Court ratings and reviews.
+- Social media integration.
+- Interactive map displaying multiple courts.
+- Distance-based court filtering.
 
-Phase 7 uses the existing fictional court data and does not require real schedules, persistent court records, player accounts, or match scheduling. Scheduling fields shall only be shown when present and clearly identified as sample, verified, or unknown.
+### Future Enhancements
 
-The Phase 7 frontend MVP is complete when:
+- Automated public court schedule updates.
+- Enhanced player matching.
+- Dedicated iOS and Android applications.
+- Advanced monitoring and analytics.
+
+## 4. Application Feature Backlog
+
+This table tracks the overall application functionality.
+
+| ID | Feature | Priority | Status | Planned Phase |
+|---|---|---|---|---|
+| FB-001 | Responsive web interface | Must Have | Completed — implemented and merged | Phase 7 |
+| FB-002 | Public court directory | Must Have | Partially Implemented | Phases 2B, 7–8 |
+| FB-003 | Court operating hours and closures | Must Have | Partially Implemented — sample hours displayed; verified data and closures pending | Phase 8 |
+| FB-004 | Court availability classifications | Must Have | Partially Implemented — classifications displayed using sample data | Phase 8 |
+| FB-005 | Google Maps navigation | Must Have | Completed — implemented and merged; SEC-FE-001 tracked | Phases 2B, 7 |
+| FB-006 | Court data source attribution | Must Have | Planned | Phase 8 |
+| FB-007 | Player profiles | Should Have | Planned | Phase 9 |
+| FB-008 | Tennis skill ratings | Should Have | Planned | Phase 9 |
+| FB-009 | Player availability preferences | Should Have | Planned | Phase 9 |
+| FB-010 | Hitting partner matching | Should Have | Planned | Phase 9 |
+| FB-011 | Match invitations and scheduling | Should Have | Planned | Phase 9 |
+| FB-012 | Email notifications | Should Have | Planned | Future |
+| FB-013 | SMS notifications | Should Have | Planned | Future |
+| FB-014 | In-app messaging | Could Have | Backlog | Future |
+| FB-015 | Court ratings and reviews | Could Have | Backlog | Future |
+| FB-016 | Interactive court map | Could Have | Backlog | Future |
+| FB-017 | Automated schedule synchronization | Future | Backlog | Future |
+| FB-018 | Native mobile applications | Future | Backlog | Future |
+
+### Implementation Notes
+
+**FB-001 — Responsive Web Interface:** FastAPI/Jinja2 homepage, directory and detail pages, responsive CSS, and keyboard-navigation improvements have been implemented, tested, and merged into `main`.
+
+**FB-002 — Public Court Directory:** Searchable, filterable court listings and detail pages work with three fictional sample records. Real Washington, D.C. public court data remains planned for Phase 8.
+
+**FB-003 and FB-004 — Operating Hours and Availability:** The court schema and detail pages support operating hours and availability classifications, including missing information. Verified public hours, closure notices, and real availability data are not yet integrated. Published hours do not guarantee an unoccupied court.
+
+**FB-005 — Google Maps Navigation:** Court detail pages generate directions through `app/api/services/maps_service.py` using a fixed Google Maps HTTPS endpoint and URL-encoded court location. The frontend behavior has been tested; the `SEC-FE-001` generic template-URL Semgrep finding remains under investigation and must be dispositioned under the security policy.
+
+**FB-006 — Source Attribution:** Real public data sources and user-visible attribution remain planned. Fictional records are not represented as verified public court information.
+
+## 5. Phase 7 — Frontend Development Backlog
+
+Phase 7 focuses on creating a responsive web interface using FastAPI, Jinja2, HTML, CSS, and minimal JavaScript.
+
+The frontend will reuse the existing court service layer and preserve current JSON API functionality.
+
+### 5.1 Implementation Tasks
+
+| ID | Feature | Priority | Status | Exercise |
+|---|---|---|---|---|
+| FE-001 | Frontend architecture and documentation | High | Completed — Exercise 1 merged | Exercise 1 |
+| FE-002 | Jinja2 template integration | High | Completed — implemented and tested; merged into `main` | Exercise 2 |
+| FE-003 | Frontend homepage | High | Completed — implemented and tested; merged into `main` | Exercise 2 |
+| FE-004 | Court directory interface | High | Completed — sample records; merged into `main` | Exercise 3 |
+| FE-005 | Court search and filtering | High | Completed — implemented and tested; merged into `main` | Exercise 3 |
+| FE-006 | Individual court detail pages | High | Completed — implemented and tested; merged into `main` | Exercise 4 |
+| FE-007 | Google Maps navigation | High | Completed — security finding tracked; merged into `main` | Exercise 4 |
+| FE-008 | Responsive CSS layout | High | Completed — responsive checks performed; merged into `main` | Exercises 4–5 |
+| FE-009 | Empty and error states | Medium | Partially Implemented — empty search and HTTP 404/422; styled error pages pending | Exercises 3–5 |
+| FE-010 | Frontend accessibility review | High | Completed — initial review and regression checks; further WCAG audit remains future work | Exercise 5 |
+| FE-011 | Automated frontend tests | High | Completed — regression suite implemented; final count to record; merged into `main` | Exercises 2–5 |
+| FE-012 | Docker and Kubernetes compatibility verification | High | Completed — local checks reported; evidence to retain; merged into `main` | Exercise 5 |
+| FE-013 | Final documentation and GitHub integration | High | Completed — Phase 7 pull request squash-merged; completion-status update follows | Exercises 5–6 |
+
+**Status convention:** “Completed” here means the scoped frontend implementation was merged and verified, not that all future enhancements or security findings are resolved. FE-009 remains partial because styled error pages are not yet implemented. Preserve outstanding CI and deployment evidence in the security register.
+
+### 5.2 Frontend Routing
+
+The implemented frontend uses dedicated web routes without replacing existing JSON API endpoints.
+
+| Route | Purpose |
+|---|---|
+| `/web` | Frontend homepage |
+| `/web/courts` | Court directory |
+| `/web/courts/{court_id}` | Court detail page |
+| `/courts/` | Existing JSON court API |
+| `/health` | Existing health endpoint |
+| `/docs` | Existing Swagger UI |
+
+The frontend currently uses fictional court records.
+
+### 5.3 Phase 7 Acceptance Criteria
+
+Phase 7 completion was assessed against these criteria:
 
 1. The homepage renders successfully.
 2. The court directory displays existing fictional court records.
-3. Search and filtering operate correctly.
-4. Individual court pages display available details.
-5. Google Maps navigation links work.
-6. Missing court records produce an appropriate response.
-7. The interface works at desktop and mobile viewport sizes.
-8. Existing JSON API endpoints remain functional.
-9. Automated frontend and existing backend tests pass.
-10. Docker and Kubernetes deployments remain compatible.
+3. Court search and filtering operate correctly.
+4. Individual court detail pages display available information.
+5. Google Maps navigation links function correctly.
+6. Missing court records produce appropriate responses.
+7. Empty search results display understandable messages.
+8. The interface supports desktop and mobile viewport sizes.
+9. Existing JSON API endpoints remain functional.
+10. Automated frontend and backend tests pass.
+11. Docker and Kubernetes deployments remain compatible.
+12. Frontend changes complete applicable security checks, and blocking findings are remediated or formally dispositioned under policy.
+13. Documentation is updated, the feature branch passes required CI checks, and changes are merged into `main`.
 
-## 6. Constraints
+### 5.4 Deferred Features
 
-- Prioritize free and open-source technologies.
-- Minimize infrastructure and external service costs.
-- Develop locally before deploying publicly.
-- Use authorized public court information.
-- Respect third-party data access and usage restrictions.
-- Do not assume published schedules represent real-time occupancy.
-- Do not represent a player-scheduled match as a reserved court.
-- Use Google Maps URLs for navigation.
-- Do not require paid mapping APIs for the MVP.
-- Avoid unnecessary collection of personal location information.
-- Require explicit approval before introducing paid services.
+The following features remain outside Phase 7:
 
-## 7. Acceptance Criteria
+- Authentication and player profiles.
+- Player matching and scheduling.
+- Real public court data ingestion.
+- PostgreSQL application persistence.
+- Automated court schedule synchronization.
+- Public cloud deployment.
 
-The criteria below cover the broader application roadmap. Criteria involving real public schedules or player accounts are not prerequisites for Phase 7; Phase 7 completion is governed by Section 5.2.
+These features will be introduced in later phases.
 
-### AC-001: Court Discovery
+## Phase 8 — Database and Real Court Data Backlog
 
-Users can browse public tennis courts in Washington, D.C.
+These `DB-XXX` task identifiers are distinct from the existing application (`FB-XXX`) and frontend (`FE-XXX`) identifiers. A planning task does not establish implementation completion.
 
-### AC-002: Court Information
+| ID | Task | Status | Exercise |
+|---|---|---|---|
+| DB-001 | Database architecture and documentation | In Progress | 1 |
+| DB-002 | PostgreSQL connectivity and configuration | Planned | 2 |
+| DB-003 | SQLAlchemy court models and constraints | Planned | 3 |
+| DB-004 | Alembic migrations | Planned | 3 |
+| DB-005 | Court repository layer | Planned | 4 |
+| DB-006 | Database-backed JSON API and Jinja2 pages | Planned | 4 |
+| DB-007 | Public court source evaluation and permitted reuse | Planned | 5 |
+| DB-008 | Validated, repeatable public data import | Planned | 5 |
+| DB-009 | Database security and regression testing | Planned | 5–6 |
+| DB-010 | Final review, pull request, merge, and snapshot | Planned | 6 |
 
-Users can view court names, addresses, and available facility information.
+**Acceptance constraints:** Keep the existing API schema and frontend behavior; use source URLs and verification timestamps; distinguish published hours from actual occupancy; reject invalid or duplicate imports; protect database credentials; and do not mark real-data features completed until imported records have been verified.
 
-### AC-003: Public Court Schedule
+`FB-002`, `FB-003`, `FB-004`, and `FB-006` remain partially implemented or planned until Phase 8 data requirements are satisfied. `FB-001` and `FB-005` retain their Phase 7 completed status.
 
-Users can view published operating hours and known closures for a selected date.
 
-### AC-004: Availability Transparency
+## 6. Feature Status Definitions
 
-Users can distinguish published operating hours, verified reservation availability, first-come-first-served access, and unknown availability.
+| Status | Definition |
+|---|---|
+| Backlog | Proposed functionality not yet scheduled |
+| Planned | Approved functionality awaiting implementation |
+| In Progress | Functionality currently being developed |
+| In Review | Implementation awaiting validation or pull-request review |
+| Partially Implemented | Some supporting functionality exists, but the complete feature is unavailable |
+| Completed | Functionality implemented, tested, and verified |
+| Deferred | Functionality postponed to a later phase |
+| Cancelled | Functionality no longer planned |
 
-### AC-005: Data Source Attribution
+### Completion Requirements
 
-Court scheduling information identifies its original source and last verification time.
+A feature should only be marked **Completed** when:
 
-### AC-006: Court Location
+- Its defined acceptance criteria are satisfied.
+- Relevant automated tests pass.
+- Applicable security checks are reviewed.
+- Related documentation is updated.
+- The implementation has been merged into `main`.
 
-Users can view court addresses and verified coordinates where available.
+## 7. Adding New Features
 
-### AC-007: Google Maps Navigation
+When new functionality is requested:
 
-Users can open Google Maps directions to a selected tennis court.
+1. Create a backlog entry with a unique identifier.
+2. Define the feature's purpose and expected user benefit.
+3. Identify the affected functional and nonfunctional requirements.
+4. Evaluate dependencies and existing application components.
+5. Assess security, privacy, accessibility, and cost implications.
+6. Assign a priority and development phase.
+7. Define measurable acceptance criteria.
+8. Update architecture and requirements documentation as needed.
+9. Implement the change on a dedicated Git branch.
+10. Run automated tests and applicable security scans.
+11. Review changes through a GitHub pull request.
+12. Merge approved changes into `main`.
+13. Update the backlog status after verification.
 
-### AC-008: Player Match Scheduling
+Feature identifiers shall not be reused when a feature is deferred or cancelled.
 
-Registered users can propose a court, date, and time to another player.
+## 8. DevSecOps Considerations
 
-### AC-009: Match Confirmation
+Each feature shall be evaluated for applicable security and operational requirements.
 
-A proposed match becomes accepted only after the invited player agrees.
+### Application Security
 
-### AC-010: Reservation Transparency
+- Input validation.
+- Authentication and authorization where applicable.
+- Safe handling of user-provided and external data.
+- Protection of sensitive information.
+- Secure external navigation links.
 
-The application clearly communicates that scheduling a match does not reserve a public tennis court.
+### Frontend Security
 
-### AC-011: Scheduling Validation
+- Jinja2 template autoescaping.
+- Validation of search and filtering parameters.
+- Avoidance of unsafe HTML rendering.
+- Controlled use of JavaScript and third-party assets.
+- Appropriate browser security controls.
 
-The application rejects invalid proposed sessions and identifies known scheduling conflicts.
+### Automated Verification
 
-### AC-012: Cross-Platform Support
+- Pytest regression tests.
+- Semgrep static security analysis.
+- Trivy container scanning.
+- Terraform infrastructure validation where applicable.
+- GitHub Actions CI checks.
 
-Court discovery, published schedules, and Google Maps navigation work on supported desktop and mobile browsers.
+### Deployment and Operations
 
-### AC-013: Cost Control
+- Docker compatibility.
+- Kubernetes compatibility.
+- Infrastructure configuration review.
+- Logging and troubleshooting.
+- Deployment and rollback considerations.
 
-Local development operates without requiring paid cloud infrastructure or mapping API subscriptions.
+Security controls will expand as authentication, persistent user information, and public cloud deployment are introduced.
 
-### 7.1 Phase 7 Acceptance Mapping
+## 9. Development Phase Alignment
 
-| Phase 7 deliverable | Requirements | Verification |
+| Phase | Focus | Status |
 |---|---|---|
-| Homepage | FR-012 | Browser route renders successfully |
-| Directory and filtering | FR-013, FR-014 | Fictional records display; supported filters work; empty results handled |
-| Court detail pages | FR-015 | Existing record renders; missing record handled |
-| Directions | FR-009, FR-016 | Valid Google Maps destination link for supported court data |
-| Error handling | FR-017 | Missing records and invalid inputs produce understandable responses |
-| Progressive enhancement | FR-018 | Core court discovery works without JavaScript where practical |
-| Responsive and accessible interface | FR-001, NFR-011, NFR-012 | Desktop/mobile and keyboard checks |
-| Security and maintainability | NFR-013, NFR-014 | Template and route review; no secrets exposed |
-| Regression and deployment compatibility | NFR-015 | Frontend and existing API tests pass; Docker and kind verified |
+| Phase 1 | Development environment | Complete |
+| Phase 2A | Git, GitHub, and documentation | Complete |
+| Phase 2B | FastAPI application foundation | Complete |
+| Phase 3 | Docker and Docker Compose | Complete |
+| Phase 4 | Security scanning and GitHub Actions | Complete |
+| Phase 5 | Kubernetes with kind | Complete |
+| Phase 6 | Terraform and Infrastructure as Code | Complete |
+| Phase 7 | Responsive frontend development | Completed |
+| Phase 8 | PostgreSQL integration and real court data | In Progress — planning |
+| Phase 9 | Player accounts and match scheduling | Planned |
+| Phase 10 | Cloud deployment and public HTTPS access | Planned |
+| Phase 11 | Production security and operational readiness | Planned |
 
-Additional acceptance criteria will be defined as implementation progresses.
+## 10. Backlog Maintenance
+
+This document shall be reviewed when:
+
+- New application requirements are introduced.
+- Existing features are implemented or modified.
+- Development phases change.
+- Security or architecture decisions affect functionality.
+- Features are deferred or cancelled.
+- Pull requests implementing tracked features are merged.
+
+### Maintenance Process
+
+1. Review the current backlog.
+2. Update feature statuses using verified implementation evidence.
+3. Add new features without changing existing identifiers.
+4. Update phase assignments when necessary.
+5. Verify consistency with project requirements and architecture documentation.
+6. Review changes through GitHub pull requests.
+
+## 11. Current Project Status
+
+**Current Phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
+**Previous Phase:** Phase 7 — Completed  
+**Repository baseline:** Phase 7 frontend pull request squash-merged into `main`; local and remote `main` synchronized, and frontend feature branches removed.
+
+### Completed Phase 7 Scope
+
+- FastAPI/Jinja2 homepage, court directory, detail pages, search, public-only filtering, and Google Maps directions.
+- Responsive styling and initial accessibility improvements, including automated frontend accessibility tests.
+- Preservation of the existing JSON API and shared court services.
+- Local Docker and kind Kubernetes frontend compatibility verification.
+- Frontend and backend regression testing, security scanning, architecture updates, and GitHub integration.
+
+### Outstanding Work and Evidence
+
+- Real public court data, database persistence, player accounts, and match scheduling are future phases.
+- Styled error pages and a broader WCAG audit remain follow-up improvements.
+- `SEC-FE-001` remains tracked pending an evidence-supported disposition; Trivy High findings require triage.
+- Final CI run identifiers and any incomplete scan metadata remain in `docs/runbooks/security-findings.md` until verified.
+
+**Long-Term Goal:** Deliver a secure, publicly accessible application that helps Washington, D.C. tennis players discover courts, coordinate matches, and navigate to playing locations. Public production deployment is not yet approved.

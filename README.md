@@ -2,8 +2,8 @@
 
 **A Washington, D.C. tennis court discovery and player coordination platform — built as a hands-on DevSecOps learning project.**
 
-**Current development phase:** Phase 7 — Completed  
-**Next development phase:** Phase 8 — PostgreSQL application persistence and real public court data  
+**Current development phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
+**Previous phase:** Phase 7 — Completed  
 **Project status:** Active development; Phase 7 merged into `main`  
 **Deployment status:** Local development and local kind Kubernetes; not approved for public deployment
 
@@ -222,12 +222,21 @@ The project remains **local-development only** and is **not approved for public 
 | 5 | Kubernetes with kind | Complete |
 | 6 | Terraform and infrastructure as code | Complete |
 | 7 | Frontend implementation and hardening | Completed |
-| 8 | PostgreSQL application persistence and real court data | Planned |
+| 8 | PostgreSQL application persistence and real court data | In Progress — Exercise 1 (planning) |
 | 9 | Player accounts, matching, and scheduling | Planned |
 | 10 | Public cloud deployment | Planned |
 | 11 | Production security and operational readiness | Planned |
 
 **Phase 7 completed work:** frontend planning, homepage, directory, search/filtering, court detail pages, Maps navigation, accessibility improvements, security reviews, and local deployment checks. The Phase 7 pull request was squash-merged into `main`, and the feature branches were removed. The project remains in local development; outstanding security findings are tracked separately.
+
+## Phase 8 — Database and Public Court Data Planning
+
+Phase 8 will introduce persistent court records while preserving the existing FastAPI JSON contract, Jinja2 routes, and Google Maps directions. **No database-backed court service or real court import is implemented yet.**
+
+The proposed stack is PostgreSQL, SQLAlchemy 2.x, Psycopg 3, and Alembic. These dependencies will be evaluated and added to `requirements.txt` in implementation exercises, **not during Exercise 1**. The initial database design separates court identity and location from public source provenance; published operating hours and restrictions will be modeled without claiming real-time occupancy.
+
+Implementation order: verify the existing PostgreSQL Compose service; establish secure connectivity; create models and reviewed migrations; introduce a repository layer; migrate API/frontend reads; then import authorized, manually verified public records. Retain fictional data for regression tests. See [`docs/architecture/database-overview.md`](docs/architecture/database-overview.md).
+
 
 ## 11. Cloud Deployment Goal
 

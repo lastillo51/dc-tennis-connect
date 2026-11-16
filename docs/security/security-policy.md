@@ -1,7 +1,7 @@
 # DC Tennis Connect — DevSecOps Security Policy
 
-**Current project phase:** Phase 7 — Completed  
-**Next project phase:** Phase 8 — PostgreSQL application persistence and real public court data  
+**Current project phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
+**Previous project phase:** Phase 7 — Completed  
 **Deployment status:** Local development; not approved for public production deployment.
 
 ## 1. Purpose
@@ -217,6 +217,20 @@ Before cloud provisioning, evaluate encrypted remote state, access controls, loc
 ### 9.2 Future Application Requirements
 
 Before storing real player information, implement appropriate authentication, authorization, session security, access controls for profiles and schedules, protection of stored/transmitted data, and data retention/deletion practices.
+
+### Phase 8 — Database and Public Data Ingestion Security (Planned)
+
+- Use dedicated least-privilege PostgreSQL credentials supplied through approved local configuration or secrets management; never commit passwords or connection URLs containing secrets.
+- Restrict PostgreSQL network exposure; do not publish its port to the internet. Separate application access from migration/administrative privileges where feasible.
+- Use SQLAlchemy parameter binding; do not interpolate untrusted values into raw SQL or dynamic SQL identifiers.
+- Review and version-control Alembic migrations. Test migration upgrade paths and establish a backup/restore approach before loading valuable records.
+- Validate imported public data, including source authorization, required fields, coordinates, duplicates, and timestamps. Treat third-party data as untrusted and never execute it as code or HTML.
+- Avoid logging secrets, full connection strings, or unnecessary personal information. Keep fictional test data distinct from verified public records.
+- Re-run tests and appropriate Semgrep/Trivy scans after introducing SQLAlchemy, Psycopg, Alembic, or new database containers. Preserve unresolved Phase 7 findings and document new evidence in the findings register.
+- Before cloud deployment, evaluate encryption in transit and at rest, database identity and access, network isolation, backups, recovery, and operational monitoring.
+
+**Exercise 1 status:** Requirements only. Database dependencies and production database access controls have not yet been implemented.
+
 
 ## 10. GitHub Actions Security
 
