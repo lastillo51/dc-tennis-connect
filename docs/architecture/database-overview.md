@@ -1,91 +1,143 @@
 # DC Tennis Connect — Database Architecture
 
-**Current phase:** Phase 8 — Exercise 1 (planning)  
-**Implementation status:** Proposed; not yet deployed as an application data store.
+**Current phase:** Phase 8 — Exercise 3 (ORM models and Alembic migrations)  
+**Implementation status:** PostgreSQL connectivity and initial schema implemented and locally verified; Exercise 3 review/merge pending. Application court retrieval still uses fictional in-memory records.
 
 ## 1. Purpose and boundaries
 
 Introduce PostgreSQL-backed public tennis court information without breaking the Phase 7 FastAPI JSON API, Jinja2 pages, court service, or Google Maps directions. This phase does not implement player accounts, official court reservations, or real-time court occupancy.
 
-## 2. Proposed technology
+The PostgreSQL schema is operational, but the court service has not yet been switched to it. Database-backed retrieval and verified real court imports remain planned for Exercises 4 and 5.
 
-| Component | Proposed technology | Role |
+## 2. Implemented technology
+
+| Component | Technology | Current role and status |
 |---|---|---|
-| Persistence | PostgreSQL | Store verified court and source records |
-| Data access | SQLAlchemy 2.x | Models, queries, repository boundary |
-| Driver | Psycopg 3 | PostgreSQL connectivity |
-| Schema migrations | Alembic | Versioned upgrade scripts |
-| Tests | Pytest | Constraints, repository, migration, and API regressions |
-| Local runtime | Existing Docker Compose | PostgreSQL service to inspect and reuse |
+| Persistence | PostgreSQL 17 | Running in Docker Compose with persistent storage; initial tables created |
+| Data access | SQLAlchemy 2.x | Engine, session factory, declarative models and metadata implemented |
+| Driver | Psycopg 3 | Host-to-container database connectivity verified |
+| Schema migrations | Alembic | Initial revision `70a0a04f5a58` applied and validated |
+| Tests | Pytest | Connectivity, constraints, ORM metadata, migration structure and schema tests |
+| Local runtime | Docker Compose | `db` service healthy; PostgreSQL host port bound to localhost |
 
-These packages are **not added to `requirements.txt` during Exercise 1**. Versions will be selected and tested in Exercises 2–3.
+Dependencies are recorded in `requirements.txt`; versions should be taken from that file rather than assumed from this document. The original Exercise 1 proposal has been superseded by the verified Exercises 2–3 implementation.
 
 ## 3. Data access flow
 
-Browser → FastAPI web/API routes → shared court service → SQLAlchemy repository → PostgreSQL.
+**Current application flow:** Browser / JSON client → FastAPI routes → shared court service → fictional in-memory sample records.
 
-The service maps persistent records to the existing `Court` Pydantic schema. Templates never query the database. The existing Maps service derives fixed-host Google Maps URLs from validated locations.
+**Implemented database foundation:** SQLAlchemy engine and `SessionLocal` in `app/db/session.py` → Psycopg 3 → PostgreSQL; Alembic manages schema changes.
 
-## 4. Initial entities (proposed)
+**Planned Exercise 4 application flow:** Browser / JSON client → FastAPI web/API routes → shared court service → SQLAlchemy repository → PostgreSQL.
+
+The service will map persistent records to the existing Pydantic `Court` schema. Templates must not query PostgreSQL. The existing Maps service derives fixed-host Google Maps URLs from validated locations.
+
+## 4. Initial entities — implemented schema
 
 ### `courts`
 
-| Field | Type | Rule |
+| Field | PostgreSQL type | Implemented constraint or behavior |
 |---|---|---|
-| `id` | INTEGER primary key | Positive identifier |
-| `name` | VARCHAR(100) | Required, nonempty |
-| `address` | VARCHAR(200) | Required, nonempty |
-| `latitude` | DOUBLE PRECISION | Nullable; between -90 and 90 |
-| `longitude` | DOUBLE PRECISION | Nullable; between -180 and 180 |
-| `number_of_courts` | INTEGER | At least 1 |
-| `public_access` | BOOLEAN | Required |
-| `availability_status` | VARCHAR(40) | Controlled classification |
-| `reservation_required` | BOOLEAN | Required; default false |
-| `created_at`, `updated_at` | TIMESTAMPTZ | Required, UTC-aware |
+| `id` | INTEGER primary key | Database-generated integer key; positive IDs enforced by API schema, not a DB check |
+| `name` | VARCHAR(100) | `NOT NULL`; nonempty content requires application validation |
+| `address` | VARCHAR(200) | `NOT NULL`; nonempty content requires application validation |
+| `latitude` | DOUBLE PRECISION | Nullable; check between -90 and 90 |
+| `longitude` | DOUBLE PRECISION | Nullable; check between -180 and 180 |
+| `number_of_courts` | INTEGER | `NOT NULL`; check at least 1 |
+| `public_access` | BOOLEAN | `NOT NULL` |
+| `availability_status` | VARCHAR(40) | `NOT NULL`; default `unknown`; controlled values |
+| `reservation_required` | BOOLEAN | `NOT NULL`; default false |
+| `created_at` | TIMESTAMPTZ | `NOT NULL`; database default `now()` |
+| `updated_at` | TIMESTAMPTZ | `NOT NULL`; database default `now()`; SQLAlchemy-side `onupdate` |
+
+The approved availability values are `published_hours`, `reservable`, `first_come_first_served`, `closed`, and `unknown`.
+
+The `updated_at` field is not automatically changed by arbitrary direct SQL updates; a trigger would be required for database-enforced updates.
 
 ### `court_sources`
 
-| Field | Type | Rule |
+| Field | PostgreSQL type | Implemented constraint or behavior |
 |---|---|---|
-| `id` | INTEGER primary key | Required |
-| `court_id` | INTEGER foreign key | References `courts.id` |
-| `publisher` | VARCHAR(150) | Required |
-| `source_url` | TEXT | Validated permitted source URL when available |
-| `source_identifier` | VARCHAR(200) | Optional stable upstream ID |
-| `last_verified_at` | TIMESTAMPTZ | Required for imported real records |
-| `source_type` | VARCHAR(50) | Controlled category |
+| `id` | INTEGER primary key | Database-generated integer key |
+| `court_id` | INTEGER foreign key | `NOT NULL`; references `courts.id`, `ON DELETE CASCADE`; indexed |
+| `source_name` | VARCHAR(150) | `NOT NULL` |
+| `source_url` | VARCHAR(1000) | `NOT NULL`; URL scheme/host validation not enforced by DB |
+| `source_type` | VARCHAR(40) | `NOT NULL`; controlled category |
+| `last_verified_at` | TIMESTAMPTZ | Nullable in initial schema |
+| `created_at` | TIMESTAMPTZ | `NOT NULL`; database default `now()` |
 
-Decide uniqueness keys and handling of multiple sources per court before the first migration. Operating hours, closures, and restrictions will be designed after inspecting actual authorized source formats. Preserve the existing optional `operating_hours` and `source_url` API fields during transition; unknown values remain null.
+The approved source types are `official`, `open_data`, `reservation_platform`, and `other`.
+
+**Differences from Exercise 1 proposal:** The implemented model uses `source_name`, not `publisher`; `source_url` is `VARCHAR(1000)`, not `TEXT`; `source_identifier` is not yet implemented; `last_verified_at` is nullable; `source_type` is `VARCHAR(40)`. These are deliberate descriptions of the actual migration, not claims that the original proposal was implemented verbatim.
+
+A court may have multiple source records. Uniqueness rules, stable upstream identifiers, verification requirements for real imports, operating hours, closures, and restrictions remain future design work.
 
 ## 5. Data integrity and import
 
-- Confirm authorized access and reuse before importing public data.
-- Require provenance and verification time for each real record.
+Implemented database checks protect court counts, coordinate ranges, controlled classifications, non-null fields, and court-source referential integrity. Application-level validation must also enforce meaningful names, addresses, URL policy, source provenance, positive identifiers, and real-record freshness.
+
+Before Exercise 5 imports:
+
+- Confirm authorized access and reuse of each public source.
+- Require source attribution and verification timestamps for imported real records.
 - Validate addresses, counts, coordinates, classifications, and dates.
-- Identify duplicate court identities and make imports repeatable (idempotent).
-- Keep fictional test fixtures separate from real court records.
-- Clearly distinguish published operating hours from reservations and physical occupancy.
-- Record errors and source changes without exposing credentials.
+- Define stable duplicate-detection keys and idempotent imports.
+- Keep fictional fixtures separate from real court records.
+- Distinguish published operating hours from reservations and physical occupancy.
+- Log import failures without exposing secrets.
 
 ## 6. Migrations and rollback
 
-Alembic migration files will be committed and reviewed. Verify schema upgrades in a disposable local database, plan backups before importing important data, and document recovery steps. Do not use destructive migration operations against populated databases without review.
+Alembic revision `70a0a04f5a58` creates `courts`, `court_sources`, their constraints, foreign key, and source lookup index. The `alembic_version` table tracks the applied revision.
+
+The initial migration was applied to the normal development database. `alembic current`, `alembic heads`, and `alembic check` verified revision alignment and no outstanding autogenerated schema operations.
+
+Upgrade, downgrade to base, and re-upgrade were successfully exercised on a **separate disposable PostgreSQL database**, which was subsequently cleaned up. The persistent development database was not downgraded.
+
+Future migrations must be reviewed before application. Backups and restore procedures are required before importing valuable real data. Do not run destructive downgrades on populated databases without explicit review.
 
 ## 7. Security and configuration
 
-Use least-privilege database credentials supplied outside Git, restricted local networking, parameterized queries, and safe error messages. Do not store secrets in templates, logs, or scan reports committed to the repository. Reassess container and dependency vulnerabilities after adding packages.
+- Use ignored local `.env` configuration and a tracked placeholder `.env.example`; never commit credentials.
+- Build connection URLs with SQLAlchemy `URL.create()` and avoid printing complete URLs.
+- Restrict PostgreSQL host publication to localhost for Ubuntu development.
+- Use parameterized SQLAlchemy queries and ensure sessions are closed.
+- Keep migrations controlled and inspect generated operations before applying them.
+- Review least-privilege database roles before production use; current local configuration does not establish production-grade privileges.
+- Keep scanner reports and secrets outside Git; record evidence and findings in `docs/runbooks/security-findings.md`.
+- Reassess SQLAlchemy, Psycopg, Alembic, and transitive dependencies when updating pins.
 
-## 8. Testing plan
+## 8. Testing and verification
 
-Test connectivity, schema constraints, repository search/filtering, unknown court behavior, API compatibility, Jinja2 rendering, migration upgrades, and import validation/idempotency. Maintain existing Phase 7 regression tests.
+Implemented verification includes:
+
+| Area | Verification |
+|---|---|
+| Connectivity | Psycopg and SQLAlchemy `SELECT 1`; standalone `scripts/check_db_connection.py` |
+| Sessions | `SessionLocal` and `get_db()` lifecycle checks |
+| Schema | Tables, primary/foreign keys, checks, indexes and Alembic revision |
+| Integrity | Invalid court count/latitude and orphan source rejected |
+| ORM metadata | Declarative table, column, relationship and constraint tests |
+| Migrations | Revision/structure tests and read-only PostgreSQL schema tests |
+| Reversibility | Upgrade → downgrade → re-upgrade on disposable database |
+| Regression | Existing FastAPI JSON API and Jinja2 tests remain passing |
+
+Database integration tests are enabled locally with `RUN_DB_TESTS=1` and intentionally skip when not enabled, including CI environments without PostgreSQL. Skipped tests are not evidence of database connectivity. Repository search/filtering, API persistence integration, and import idempotency tests remain planned.
 
 ## 9. Deployment boundaries
 
-Initial development uses local PostgreSQL in Docker Compose. Local kind integration and future cloud-managed PostgreSQL require separate configuration and security reviews. Terraform currently provides a local learning foundation, not production database provisioning.
+Initial development uses PostgreSQL 17 in Docker Compose with a named persistent volume and localhost-only host port. The existing kind cluster and Terraform learning environment do not yet constitute a production database deployment. Containerized application connections use the Compose network host `db`, while Ubuntu-hosted Python uses the mapped localhost port. Production secret management, backups, access controls, and network architecture require separate review.
 
 ## 10. Exercise status
 
-Exercise 1: planning and documentation only. Database connectivity, ORM models, migrations, and real court imports are not yet implemented.
+| Exercise | Status |
+|---|---|
+| 1 — Architecture and planning | Documented; updated to reflect implemented design |
+| 2 — Connectivity and configuration | Implemented, tested, committed and pushed to feature branch |
+| 3 — ORM models and Alembic | Implemented and verified locally; final security review and GitHub merge pending |
+| 4 — Repository/service integration | Planned; current application still uses fictional records |
+| 5 — Authorized public court import | Planned |
+| 6 — Final review, merge and snapshot | Planned |
 
 ## 11. Related documentation
 

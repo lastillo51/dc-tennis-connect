@@ -1,6 +1,6 @@
 # DC Tennis Connect — System Architecture
 
-> **Current stage:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
+> **Current stage:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 3: ORM models and migrations; pending merge)  
 > **Previous stage:** Phase 7 — Completed; frontend merged into `main`  
 > **Deployment scope:** Local development and testing; not approved for public production deployment.  
 > **Document purpose:** Describe implemented architecture, planned components, and the boundaries between them.
@@ -9,7 +9,7 @@
 
 DC Tennis Connect is a FastAPI application for helping Washington, D.C. tennis players discover courts and, in future phases, coordinate matches. The current application combines a JSON API with server-rendered Jinja2 pages. Both interfaces use shared Pydantic court models and service functions backed by **fictional in-memory sample records**.
 
-Docker and Docker Compose support local container development. A local Kubernetes cluster created with kind provides an orchestration test environment. Terraform supports infrastructure-as-code learning through local resources and reusable modules. PostgreSQL is available in the local container environment but **application court and player records are not yet persisted there**.
+Docker and Docker Compose support local container development. A local Kubernetes cluster created with kind provides an orchestration test environment. Terraform supports infrastructure-as-code learning through local resources and reusable modules. PostgreSQL 17 is running locally with persistent Docker storage. SQLAlchemy 2.x and Psycopg 3 connectivity, ORM models, and Alembic schema migration are implemented and locally verified on the Phase 8 feature branch. **The existing court service still uses fictional in-memory records; database-backed application retrieval has not yet been integrated.**
 
 The application does not reserve public courts or guarantee that a court is unoccupied. Public cloud hosting, verified DC court data, player accounts, and scheduling are not implemented.
 
@@ -43,7 +43,9 @@ The frontend calls shared Python services directly; it does not make HTTP reques
 | Court retrieval and search | `app/api/services/court_service.py` | Implemented |
 | Google Maps directions | `app/api/services/maps_service.py` | Implemented |
 | Application records | In-memory fictional court dataset | Development-only |
-| PostgreSQL | Local container with persistent storage | Configured; application persistence planned |
+| PostgreSQL | PostgreSQL 17 in Docker Compose with persistent storage and localhost-only host port | Running and verified; court tables created, application data migration pending |
+| Database access foundation | `app/db/session.py`, SQLAlchemy 2.x, Psycopg 3 | Engine, session factory, `get_db()` and standalone connectivity diagnostic verified |
+| ORM and migrations | `app/db/base.py`, `app/db/models/court.py`, `alembic/` | Initial schema implemented and verified locally; merge pending |
 | Docker | Application image and Compose configuration | Implemented locally |
 | Kubernetes | kind cluster, Deployment, Service, ConfigMap, probes, security context | Implemented locally |
 | Terraform | Local environments, modules, validation and IaC scans | Foundation completed |
@@ -119,6 +121,18 @@ Each source must be checked for accuracy, permitted use, and update frequency be
 ### 3.3 Planned validation and freshness
 
 Future persisted court records should distinguish published operating hours, reservable slots, published reservations, first-come-first-served access, known closures, and unknown availability. Where available, record source attribution, verification timestamps, and date-specific restrictions. Do not represent stale or unverified information as confirmed availability.
+
+### 3.4 Implemented Phase 8 database foundation (Exercises 2–3)
+
+The `courts` and `court_sources` PostgreSQL tables were created by Alembic revision `70a0a04f5a58`. The schema has primary keys, a foreign key from `court_sources.court_id` to `courts.id` with `ON DELETE CASCADE`, an index on `court_sources.court_id`, non-null requirements, court count and coordinate checks, and controlled availability/source classifications. Timestamp columns use timezone-aware PostgreSQL types.
+
+The ORM models live in `app/db/models/court.py`, registered through `app/db/base.py`. The SQLAlchemy engine and session factory in `app/db/session.py` use credentials from ignored local configuration and a Psycopg connection. Alembic manages schema changes; the application does not call `Base.metadata.create_all()`.
+
+The initial upgrade, downgrade, and re-upgrade were verified on a disposable database; the normal development database remained intact. ORM metadata, migration structure, schema constraints, and database connectivity have automated Pytest coverage. PostgreSQL integration tests are explicitly enabled using `RUN_DB_TESTS=1` and skip in CI-style runs without PostgreSQL.
+
+The current schema uses `source_name`, `source_url`, `source_type`, and nullable `last_verified_at`; upstream source identifiers and verified real data are future enhancements. There are no dedicated operating-hours or closures tables yet. The database schema does not itself enforce nonblank names, positive IDs, URL format, or source freshness; application/import validation is required.
+
+**Boundary:** These tables do not yet back the FastAPI court service, JSON API, or Jinja2 templates. Exercise 4 introduces the repository/service mapping and Exercise 5 handles verified public court data.
 
 ## 4. Google Maps Navigation
 
@@ -218,24 +232,25 @@ Public deployment should be gated on verified operational and security readiness
 | Phases 1–6 local DevSecOps foundations | Completed |
 | Phase 7 frontend pages, court search, details, Maps navigation | Implemented, verified, and merged into `main` |
 | Phase 7 accessibility, security and deployment hardening | Local implementation and verification completed; outstanding Semgrep/Trivy findings remain tracked |
-| Phase 8 real court data and PostgreSQL persistence | Planned |
+| Phase 8 PostgreSQL connectivity and local schema | Implemented and verified on feature branch; merge pending |
+| Phase 8 database-backed court service and real court data | Planned — Exercises 4–5 |
 | Phase 9 player accounts and scheduling | Planned |
 | Phase 10 cloud deployment | Planned |
 | Phase 11 production security and operations | Planned |
 
 Update this document when an implemented route, component, data source, deployment mechanism, or security boundary changes. Keep historical verification evidence in the relevant runbooks and do not silently replace planned capabilities with claims of implementation.
 
-## Phase 8 — Proposed Persistence Architecture
+## Phase 8 — Persistence Architecture and Implementation Status
 
-**Status:** Design only; Phase 7 still reads fictional in-memory court records.
+**Status:** Exercises 2–3 implemented and locally verified; awaiting feature-branch review/merge. Exercises 4–5 remain planned.
 
-The proposed data path is FastAPI web/JSON routes → shared court service → repository layer (SQLAlchemy 2.x) → PostgreSQL (Psycopg 3). Alembic will manage reviewed, version-controlled migrations. Database models will be mapped to the existing Pydantic `Court` representation to preserve the JSON API and Jinja2 pages.
+The target data path is FastAPI web/JSON routes → shared court service → SQLAlchemy repository → PostgreSQL (Psycopg 3). The PostgreSQL connection module and ORM tables are implemented, but the repository layer and service mapping are **not yet connected** to application routes. Phase 7 still reads fictional sample court records.
 
-Initial persistent entities are **courts** (identity, address, coordinates, court count, access and availability classification, timestamps) and **court_sources** (publisher, source identifier/URL, verification timestamp). Day-specific operating hours and closures will be added after source formats are evaluated. Google Maps URLs remain derived from trusted location fields, not accepted as arbitrary redirect URLs.
+The initial persistent entities are `courts` (identity, address, optional coordinates, court count, access and availability classification, timestamps) and `court_sources` (court foreign key, source name/URL/type, nullable verification timestamp). The schema is managed through Alembic revision `70a0a04f5a58`. Operating hours, closures, source identifier/uniqueness rules, and import provenance validation remain future design work.
 
-The existing Docker Compose PostgreSQL service will be inspected and reused where appropriate. Local Kubernetes integration is a separate validation step; Terraform currently does not provision production database infrastructure. Authentication, player scheduling, and public cloud database hosting remain future phases.
+PostgreSQL 17 runs locally through Docker Compose with persistent storage and localhost-only port publication. Database credentials remain in ignored environment files. A standalone diagnostic, SQLAlchemy integration tests, ORM unit tests, Alembic revision/schema checks, and disposable-database rollback verification support this implementation.
 
-**Data trust boundary:** Import only information whose use is authorized; validate fields and duplicate keys; retain provenance; distinguish published hours from physical availability. See `docs/architecture/database-overview.md` for the planned schema and migration lifecycle.
+**Data trust boundary:** Import only information whose reuse is authorized; validate fields and duplicate identities; retain provenance and verification timestamps; distinguish published hours from physical occupancy. Google Maps URLs remain derived from trusted location fields. See `docs/architecture/database-overview.md` for the detailed implemented schema and outstanding gaps.
 
 
 ## 11. Related Documentation
