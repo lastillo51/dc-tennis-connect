@@ -1,6 +1,6 @@
 # DC Tennis Connect — DevSecOps Security Policy
 
-**Current project phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
+**Current project phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 4: Repository and Service Integration)  
 **Previous project phase:** Phase 7 — Completed  
 **Deployment status:** Local development; not approved for public production deployment.
 
@@ -283,3 +283,16 @@ Update status and date when a revision is actually approved and merged.
 | `docker/compose.yaml` | Local application and database services |
 
 Add references as new documentation is created.
+
+## Phase 8 Exercise 4 — Consolidated Documentation Checkpoint (2026-11-18)
+
+**Status:** Implementation in progress; final Exercise 4 regression, security, deployment review, commit and CI confirmation remain subject to verification. This checkpoint does not declare Phase 8 complete.
+
+- PostgreSQL 17 runs locally through Docker Compose. SQLAlchemy 2.x, Psycopg 3, and Alembic are configured. The initial `courts` and `court_sources` schema is at Alembic revision `70a0a04f5a58`; upgrades, downgrades, and re-upgrades were verified against a disposable database.
+- The application court service now uses `app/db/repositories/court_repository.py` and `app/api/mappers/court_mapper.py` to retrieve and map persistent records to the existing Pydantic `Court` response. FastAPI JSON and Jinja2 court routes use the `get_db` session dependency.
+- Existing API paths, nested location fields, search and public filtering, HTTP 404/422 handling, and trusted Google Maps directions generation remain the intended compatibility contract.
+- The `dc_tennis_test` database holds transaction-isolated fictional fixtures for tests. Existing three-court assumptions are being adapted to those fixtures. The latest reported full run was 80 passed, 2 failed, 1 warning; the two accessibility-test failures were traced to obsolete service signatures, and a subsequent syntax error was identified. A clean final full-suite result has not yet been supplied.
+- The normal development database is not seeded with fictional fixtures; real public court records, verified operating hours and closure persistence, provenance-based import, and scheduling remain future work. Published hours must not be presented as guaranteed occupancy or official reservations.
+- PostgreSQL integration tests are opt-in through `RUN_DB_TESTS=1`; CI without a PostgreSQL service skips database-dependent tests. A PostgreSQL-backed CI job remains planned. Container/Kubernetes database networking and production-readiness require separate validation.
+- Security review continues to track `SEC-FE-001`, historical Trivy image findings, and the Phase 8 OpenTelemetry advisory `CVE-2026-126360`. Record a resolved status only with actual patched-dependency and rescan evidence; preserve all historical results.
+- **Documentation cadence:** Routine documentation edits are deferred after this checkpoint until Phase 8 Exercise 6. Continue recording consequential security findings, architecture decisions, and migration changes when they occur. Before final merge, reconcile all eight canonical project documents against the actual repository and verified test/CI evidence.

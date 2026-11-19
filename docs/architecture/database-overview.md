@@ -1,13 +1,13 @@
 # DC Tennis Connect — Database Architecture
 
-**Current phase:** Phase 8 — Exercise 3 (ORM models and Alembic migrations)  
-**Implementation status:** PostgreSQL connectivity and initial schema implemented and locally verified; Exercise 3 review/merge pending. Application court retrieval still uses fictional in-memory records.
+**Current phase:** Phase 8 — Exercise 4 (repository and service integration)  
+**Implementation status:** PostgreSQL connectivity and initial schema implemented and locally verified; Exercise 3 review/merge pending. Application court retrieval now uses PostgreSQL through the repository and service layers; real public court data has not been imported.
 
 ## 1. Purpose and boundaries
 
 Introduce PostgreSQL-backed public tennis court information without breaking the Phase 7 FastAPI JSON API, Jinja2 pages, court service, or Google Maps directions. This phase does not implement player accounts, official court reservations, or real-time court occupancy.
 
-The PostgreSQL schema is operational, but the court service has not yet been switched to it. Database-backed retrieval and verified real court imports remain planned for Exercises 4 and 5.
+The PostgreSQL schema is operational and court retrieval is integrated through the repository and mapper. Verified real court imports remain planned for Exercise 5.
 
 ## 2. Implemented technology
 
@@ -148,3 +148,17 @@ Initial development uses PostgreSQL 17 in Docker Compose with a named persistent
 - `docs/architecture/frontend-overview.md`
 - `docs/security/security-policy.md`
 - `docs/runbooks/security-findings.md`
+
+
+## Phase 8 Exercise 4 — Consolidated Documentation Checkpoint (2026-11-18)
+
+**Status:** Implementation in progress; final Exercise 4 regression, security, deployment review, commit and CI confirmation remain subject to verification. This checkpoint does not declare Phase 8 complete.
+
+- PostgreSQL 17 runs locally through Docker Compose. SQLAlchemy 2.x, Psycopg 3, and Alembic are configured. The initial `courts` and `court_sources` schema is at Alembic revision `70a0a04f5a58`; upgrades, downgrades, and re-upgrades were verified against a disposable database.
+- The application court service now uses `app/db/repositories/court_repository.py` and `app/api/mappers/court_mapper.py` to retrieve and map persistent records to the existing Pydantic `Court` response. FastAPI JSON and Jinja2 court routes use the `get_db` session dependency.
+- Existing API paths, nested location fields, search and public filtering, HTTP 404/422 handling, and trusted Google Maps directions generation remain the intended compatibility contract.
+- The `dc_tennis_test` database holds transaction-isolated fictional fixtures for tests. Existing three-court assumptions are being adapted to those fixtures. The latest reported full run was 80 passed, 2 failed, 1 warning; the two accessibility-test failures were traced to obsolete service signatures, and a subsequent syntax error was identified. A clean final full-suite result has not yet been supplied.
+- The normal development database is not seeded with fictional fixtures; real public court records, verified operating hours and closure persistence, provenance-based import, and scheduling remain future work. Published hours must not be presented as guaranteed occupancy or official reservations.
+- PostgreSQL integration tests are opt-in through `RUN_DB_TESTS=1`; CI without a PostgreSQL service skips database-dependent tests. A PostgreSQL-backed CI job remains planned. Container/Kubernetes database networking and production-readiness require separate validation.
+- Security review continues to track `SEC-FE-001`, historical Trivy image findings, and the Phase 8 OpenTelemetry advisory `CVE-2026-126360`. Record a resolved status only with actual patched-dependency and rescan evidence; preserve all historical results.
+- **Documentation cadence:** Routine documentation edits are deferred after this checkpoint until Phase 8 Exercise 6. Continue recording consequential security findings, architecture decisions, and migration changes when they occur. Before final merge, reconcile all eight canonical project documents against the actual repository and verified test/CI evidence.
