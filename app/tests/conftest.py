@@ -14,16 +14,19 @@ TEST_DATABASE_NAME = "dc_tennis_test"
 
 @pytest.fixture(scope="session")
 def test_engine():
-    """Connect only to the dedicated test database."""
+    """Connect only to the dedicated PostgreSQL test database."""
 
     if os.getenv("RUN_DB_TESTS") != "1":
         pytest.skip("Database integration tests are disabled")
 
+    # Import only after database tests are explicitly enabled.
+    from app.db.session import get_database_url
+
     url = get_database_url().set(
-        database=TEST_DATABASE_NAME
+        database="dc_tennis_test"
     )
 
-    if url.database != TEST_DATABASE_NAME:
+    if url.database != "dc_tennis_test":
         raise RuntimeError(
             "Refusing to use a non-test database"
         )
@@ -33,9 +36,10 @@ def test_engine():
         pool_pre_ping=True,
     )
 
-    yield engine
-
-    engine.dispose()
+    try:
+        yield engine
+    finally:
+        engine.dispose()
 
 
 @pytest.fixture
