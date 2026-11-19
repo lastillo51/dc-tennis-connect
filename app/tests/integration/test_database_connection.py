@@ -7,13 +7,16 @@ import pytest
 from dotenv import load_dotenv
 from sqlalchemy import text
 
+
 # Load local configuration explicitly, avoiding find_dotenv()
-# failures with Python 3.14 and stdin-based execution.
+# issues with Python 3.14 and stdin-based execution.
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
 load_dotenv(
     dotenv_path=PROJECT_ROOT / ".env",
     override=False,
 )
+
 
 # Database tests are opt-in so ordinary CI does not
 # require a running PostgreSQL service.
@@ -27,17 +30,21 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def db_components():
-    """Import database components only for enabled tests."""
+    """Provide database components only for enabled tests."""
 
     from app.db.session import (
-        SessionLocal,
-        engine,
+        get_engine,
+        get_session_factory,
         get_db,
     )
 
-    yield engine, SessionLocal, get_db
+    engine = get_engine()
+    session_factory = get_session_factory()
 
-    engine.dispose()
+    yield engine, session_factory, get_db
+
+    # Do not dispose the cached shared engine here.
+    # Other tests may use it during this Pytest session.
 
 
 def test_database_engine_connection(db_components):
@@ -54,11 +61,11 @@ def test_database_engine_connection(db_components):
 
 
 def test_database_session_connection(db_components):
-    """Verify SessionLocal can execute a query."""
+    """Verify a SQLAlchemy session can execute a query."""
 
-    _, SessionLocal, _ = db_components
+    _, session_factory, _ = db_components
 
-    with SessionLocal() as session:
+    with session_factory() as session:
         result = session.execute(
             text("SELECT 1")
         ).scalar_one()

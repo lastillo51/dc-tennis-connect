@@ -25,7 +25,7 @@ def test_homepage_contains_skip_link():
     assert "Skip to main content" in response.text
 
 
-def test_directory_search_has_label():
+def test_directory_search_has_label(court_test_data):
     response = client.get("/web/courts")
 
     assert response.status_code == 200

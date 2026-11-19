@@ -17,9 +17,11 @@ EXPECTED_REVISION = "70a0a04f5a58"
 
 @pytest.fixture(scope="module")
 def db_engine():
-    from app.db.session import engine
+    """Provide the lazily initialized SQLAlchemy engine."""
 
-    yield engine
+    from app.db.session import get_engine
+
+    yield get_engine()
 
 
 def test_alembic_version_table_exists(db_engine):

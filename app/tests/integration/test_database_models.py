@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
+
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_DB_TESTS") != "1",
     reason="Set RUN_DB_TESTS=1 to enable database tests",
@@ -14,7 +15,11 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture
 def connection():
-    from app.db.session import engine
+    """Provide a connection with transaction rollback cleanup."""
+
+    from app.db.session import get_engine
+
+    engine = get_engine()
 
     with engine.connect() as conn:
         transaction = conn.begin()
@@ -22,10 +27,13 @@ def connection():
         try:
             yield conn
         finally:
-            transaction.rollback()
+            if transaction.is_active:
+                transaction.rollback()
 
 
 def test_courts_table_exists(connection):
+    """Verify the courts table exists."""
+
     result = connection.execute(
         text("SELECT to_regclass('public.courts')")
     ).scalar_one()
@@ -34,6 +42,8 @@ def test_courts_table_exists(connection):
 
 
 def test_court_sources_table_exists(connection):
+    """Verify the court_sources table exists."""
+
     result = connection.execute(
         text("SELECT to_regclass('public.court_sources')")
     ).scalar_one()
@@ -42,6 +52,8 @@ def test_court_sources_table_exists(connection):
 
 
 def test_invalid_court_count_rejected(connection):
+    """Reject a court containing fewer than one court."""
+
     with pytest.raises(IntegrityError):
         connection.execute(
             text("""
@@ -56,6 +68,8 @@ def test_invalid_court_count_rejected(connection):
 
 
 def test_invalid_latitude_rejected(connection):
+    """Reject coordinates outside the valid latitude range."""
+
     with pytest.raises(IntegrityError):
         connection.execute(
             text("""
@@ -70,6 +84,8 @@ def test_invalid_latitude_rejected(connection):
 
 
 def test_orphan_source_rejected(connection):
+    """Reject source records without an existing parent court."""
+
     with pytest.raises(IntegrityError):
         connection.execute(
             text("""

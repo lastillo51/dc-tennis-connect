@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    env:
+      RUN_DB_TESTS: "0"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,6 +48,7 @@ jobs:
       - name: Run Pytest
         run: |
           python -m pytest app/tests/ -v
+
 
   semgrep:
     name: Semgrep SAST

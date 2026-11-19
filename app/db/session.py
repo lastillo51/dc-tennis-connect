@@ -2,6 +2,7 @@
 
 import os
 from collections.abc import Generator
+from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -15,7 +16,10 @@ ENV_FILE = BASE_DIR / ".env"
 
 # Explicit path avoids python-dotenv discovery issues.
 # Existing environment variables take precedence.
-load_dotenv(dotenv_path=ENV_FILE, override=False)
+load_dotenv(
+    dotenv_path=ENV_FILE,
+    override=False,
+)
 
 
 def get_database_url() -> URL:
@@ -75,18 +79,26 @@ def create_db_engine() -> Engine:
     )
 
 
-# Engine construction does not immediately connect to PostgreSQL.
-engine = create_db_engine()
+@lru_cache(maxsize=1)
+def get_engine() -> Engine:
+    """Initialize the engine only when database access is needed."""
 
-SessionLocal = sessionmaker(
-    bind=engine,
-    autoflush=False,
-    expire_on_commit=False,
-)
+    return create_db_engine()
+
+
+@lru_cache(maxsize=1)
+def get_session_factory() -> sessionmaker[Session]:
+    """Return a reusable session factory bound to the engine."""
+
+    return sessionmaker(
+        bind=get_engine(),
+        autoflush=False,
+        expire_on_commit=False,
+    )
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Provide a database session and always close it afterward."""
+    """Provide a database session and close it afterward."""
 
-    with SessionLocal() as db:
+    with get_session_factory()() as db:
         yield db

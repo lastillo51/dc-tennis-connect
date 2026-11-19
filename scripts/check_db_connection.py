@@ -3,13 +3,16 @@
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.db.session import engine
+from app.db.session import get_engine
 
 
 def check_database_connection() -> bool:
     """Execute read-only PostgreSQL connectivity checks."""
 
     try:
+        # Initialize the engine only when the diagnostic runs.
+        engine = get_engine()
+
         with engine.connect() as connection:
             result = connection.execute(
                 text(
@@ -27,7 +30,10 @@ def check_database_connection() -> bool:
             ).scalar_one()
 
         if health != 1:
-            print("FAIL: Database health query returned an unexpected result")
+            print(
+                "FAIL: Database health query returned "
+                "an unexpected result"
+            )
             return False
 
         print("PASS: PostgreSQL connection successful")
@@ -38,9 +44,9 @@ def check_database_connection() -> bool:
 
         return True
 
-    except SQLAlchemyError as exc:
-        # Do not print the full exception: it may contain
-        # connection details or other sensitive information.
+    except (SQLAlchemyError, RuntimeError) as exc:
+        # Avoid printing the full exception because it may
+        # contain connection details or sensitive information.
         print(
             "FAIL: PostgreSQL connection could not be established"
         )
@@ -50,10 +56,9 @@ def check_database_connection() -> bool:
 
 
 def main() -> int:
-    try:
-        return 0 if check_database_connection() else 1
-    finally:
-        engine.dispose()
+    """Run the diagnostic and return an appropriate exit code."""
+
+    return 0 if check_database_connection() else 1
 
 
 if __name__ == "__main__":
