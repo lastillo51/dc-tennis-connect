@@ -45,7 +45,13 @@
 
                     <dt>Reservation required</dt>
                     <dd>
-                        {{ "Yes" if court.reservation_required else "No" }}
+                        {% if court.reservation_required is none %}
+                            Unknown
+                        {% elif court.reservation_required %}
+                            Yes
+                        {% else %}
+                            No
+                        {% endif %}
                     </dd>
                 </dl>
             </section>

@@ -165,3 +165,31 @@ def test_google_maps_url_cannot_use_javascript_scheme(court_test_data):
     assert parsed.netloc == "www.google.com"
     assert parsed.path == "/maps/dir/"
     assert "javascript:" not in url.split("?")[0]
+
+
+def test_court_detail_displays_unknown_reservation_policy(
+    court_test_data,
+):
+    """Unknown official policies must not display as No."""
+
+    court = first_court(court_test_data)
+
+    unknown_policy_court = court.model_copy(
+        update={"reservation_required": None}
+    )
+
+    with patch(
+        "app.web.routes.get_court_by_id",
+        return_value=unknown_policy_court,
+    ):
+        with TestClient(app) as client:
+            response = client.get(
+                f"/web/courts/{court.id}"
+            )
+
+    assert response.status_code == 200
+
+    normalized_html = " ".join(response.text.split())
+
+    assert "Reservation required" in normalized_html
+    assert "Unknown" in normalized_html

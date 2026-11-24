@@ -99,3 +99,54 @@ def test_orphan_source_rejected(connection):
                      'official')
             """)
         )
+
+
+def test_reservation_required_accepts_null(connection):
+    """PostgreSQL accepts an unknown official reservation policy."""
+
+    result = connection.execute(
+        text("""
+            INSERT INTO courts (
+                name,
+                address,
+                number_of_courts,
+                public_access,
+                reservation_required
+            )
+            VALUES (
+                'Fictional Nullable Policy Court',
+                'Example Address, Washington, DC',
+                1,
+                TRUE,
+                NULL
+            )
+            RETURNING id, reservation_required
+        """)
+    ).mappings().one()
+
+    assert result["id"] > 0
+    assert result["reservation_required"] is None
+
+
+def test_reservation_required_has_no_server_default(connection):
+    """Omitting the policy should store NULL, not FALSE."""
+
+    result = connection.execute(
+        text("""
+            INSERT INTO courts (
+                name,
+                address,
+                number_of_courts,
+                public_access
+            )
+            VALUES (
+                'Fictional Default Policy Court',
+                'Example Address, Washington, DC',
+                1,
+                TRUE
+            )
+            RETURNING reservation_required
+        """)
+    ).scalar_one()
+
+    assert result is None

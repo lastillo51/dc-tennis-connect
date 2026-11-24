@@ -31,6 +31,6 @@ class Court(BaseModel):
     public_access: bool
     availability_status: AvailabilityStatus = AvailabilityStatus.UNKNOWN
     operating_hours: CourtHours | None = None
-    reservation_required: bool = False
+    reservation_required: bool | None = None
     source_url: str | None = None
     google_maps_url: str | None = None

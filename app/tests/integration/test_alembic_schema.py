@@ -12,7 +12,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-EXPECTED_REVISION = "70a0a04f5a58"
+EXPECTED_REVISION = "61174a56cf41"
 
 
 @pytest.fixture(scope="module")
@@ -73,3 +73,30 @@ def test_database_check_constraints_exist(db_engine):
         "ck_courts_longitude_range",
         "ck_courts_availability_status",
     } <= constraints
+
+
+def test_reservation_required_is_nullable(db_engine):
+    """Verify the database permits unknown reservation policies."""
+
+    inspector = inspect(db_engine)
+
+    columns = {
+        column["name"]: column
+        for column in inspector.get_columns("courts")
+    }
+
+    assert "reservation_required" in columns
+    assert columns["reservation_required"]["nullable"] is True
+
+
+def test_reservation_required_has_no_default(db_engine):
+    """Verify the old FALSE database default was removed."""
+
+    inspector = inspect(db_engine)
+
+    columns = {
+        column["name"]: column
+        for column in inspector.get_columns("courts")
+    }
+
+    assert columns["reservation_required"]["default"] is None

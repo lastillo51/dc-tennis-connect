@@ -6,7 +6,6 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app.db.session import get_database_url
 
 
 TEST_DATABASE_NAME = "dc_tennis_test"

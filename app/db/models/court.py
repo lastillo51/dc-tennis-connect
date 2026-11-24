@@ -10,6 +10,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -83,11 +84,9 @@ class Court(Base):
         server_default="unknown",
     )
 
-    reservation_required: Mapped[bool] = mapped_column(
+    reservation_required: Mapped[bool | None] = mapped_column(
         Boolean,
-        nullable=False,
-        default=False,
-        server_default="false",
+        nullable=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -118,6 +117,11 @@ class CourtSource(Base):
             "('official', 'open_data', 'reservation_platform', 'other')",
             name="ck_court_sources_type",
         ),
+        UniqueConstraint(
+            "source_name",
+            "source_identifier",
+            name="uq_court_sources_source_identity",
+        ),
     )
 
     id: Mapped[int] = mapped_column(
@@ -134,6 +138,11 @@ class CourtSource(Base):
     source_name: Mapped[str] = mapped_column(
         String(150),
         nullable=False,
+    )
+
+    source_identifier: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
     )
 
     source_url: Mapped[str] = mapped_column(

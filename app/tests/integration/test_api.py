@@ -8,6 +8,10 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
+from unittest.mock import patch
+
+from app.api.schemas.court import Court, CourtLocation
+
 
 db_required = pytest.mark.skipif(
     os.getenv("RUN_DB_TESTS") != "1",
@@ -97,3 +101,34 @@ def test_invalid_public_only_parameter(court_test_data):
         response = client.get("/courts/", params={"public_only": "invalid"})
 
     assert response.status_code == 422
+
+
+def test_court_api_supports_unknown_reservation_policy():
+    """API responses preserve null for unknown official policy."""
+
+    fictional_court = Court(
+        id=98765,
+        name="Fictional API Test Court",
+        location=CourtLocation(
+            address="Example Address, Washington, DC",
+            latitude=38.9,
+            longitude=-77.0,
+        ),
+        number_of_courts=1,
+        public_access=True,
+        reservation_required=None,
+    )
+
+    with patch(
+        "app.api.routes.courts.get_court_by_id",
+        return_value=fictional_court,
+    ):
+        with TestClient(app) as client:
+            response = client.get("/courts/98765")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "reservation_required" in data
+    assert data["reservation_required"] is None
