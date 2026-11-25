@@ -104,7 +104,15 @@ def test_invalid_public_only_parameter(court_test_data):
 
 
 def test_court_api_supports_unknown_reservation_policy():
-    """API responses preserve null for unknown official policy."""
+    """API responses preserve null without requiring PostgreSQL."""
+
+    from unittest.mock import patch
+
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+    from app.db.session import get_db
+    from app.api.schemas.court import Court, CourtLocation
 
     fictional_court = Court(
         id=98765,
@@ -119,16 +127,33 @@ def test_court_api_supports_unknown_reservation_policy():
         reservation_required=None,
     )
 
-    with patch(
-        "app.api.routes.courts.get_court_by_id",
-        return_value=fictional_court,
-    ):
-        with TestClient(app) as client:
-            response = client.get("/courts/98765")
+    # Override FastAPI's database dependency.
+    # The mocked route does not need a real database session.
+    def override_get_db():
+        yield None
 
-    assert response.status_code == 200
+    previous_override = app.dependency_overrides.get(get_db)
 
-    data = response.json()
+    app.dependency_overrides[get_db] = override_get_db
 
-    assert "reservation_required" in data
-    assert data["reservation_required"] is None
+    try:
+        with patch(
+            "app.api.routes.courts.get_court_by_id",
+            return_value=fictional_court,
+        ):
+            with TestClient(app) as client:
+                response = client.get("/courts/98765")
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert "reservation_required" in data
+        assert data["reservation_required"] is None
+
+    finally:
+        # Restore the previous override rather than affecting other tests.
+        if previous_override is None:
+            app.dependency_overrides.pop(get_db, None)
+        else:
+            app.dependency_overrides[get_db] = previous_override
