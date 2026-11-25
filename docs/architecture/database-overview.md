@@ -1,7 +1,18 @@
 # DC Tennis Connect — Database Architecture
 
-**Current phase:** Phase 8 — Exercise 4 (repository and service integration)  
-**Implementation status:** PostgreSQL connectivity and initial schema implemented and locally verified; Exercise 3 review/merge pending. Application court retrieval now uses PostgreSQL through the repository and service layers; real public court data has not been imported.
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
+**Current phase:** Phase 8 — Exercise 6 (final review)  
+**Implementation status:** PostgreSQL-backed application retrieval and three Alembic revisions implemented; dry-run and test-only import infrastructure implemented; real public court publication and merge pending.
 
 ## 1. Purpose and boundaries
 
@@ -24,13 +35,13 @@ Dependencies are recorded in `requirements.txt`; versions should be taken from t
 
 ## 3. Data access flow
 
-**Current application flow:** Browser / JSON client → FastAPI routes → shared court service → fictional in-memory sample records.
+**Current application flow:** Browser / JSON client → FastAPI routes → shared court service → SQLAlchemy repository → PostgreSQL.
 
 **Implemented database foundation:** SQLAlchemy engine and `SessionLocal` in `app/db/session.py` → Psycopg 3 → PostgreSQL; Alembic manages schema changes.
 
-**Planned Exercise 4 application flow:** Browser / JSON client → FastAPI web/API routes → shared court service → SQLAlchemy repository → PostgreSQL.
+**Implemented Exercise 4 application flow:** Browser / JSON client → FastAPI web/API routes → shared court service → SQLAlchemy repository → PostgreSQL.
 
-The service will map persistent records to the existing Pydantic `Court` schema. Templates must not query PostgreSQL. The existing Maps service derives fixed-host Google Maps URLs from validated locations.
+The service maps persistent records to the existing Pydantic `Court` schema. Templates must not query PostgreSQL. The existing Maps service derives fixed-host Google Maps URLs from validated locations.
 
 ## 4. Initial entities — implemented schema
 
@@ -46,7 +57,7 @@ The service will map persistent records to the existing Pydantic `Court` schema.
 | `number_of_courts` | INTEGER | `NOT NULL`; check at least 1 |
 | `public_access` | BOOLEAN | `NOT NULL` |
 | `availability_status` | VARCHAR(40) | `NOT NULL`; default `unknown`; controlled values |
-| `reservation_required` | BOOLEAN | `NOT NULL`; default false |
+| `reservation_required` | BOOLEAN | Nullable; no server default; `NULL` means official policy unknown |
 | `created_at` | TIMESTAMPTZ | `NOT NULL`; database default `now()` |
 | `updated_at` | TIMESTAMPTZ | `NOT NULL`; database default `now()`; SQLAlchemy-side `onupdate` |
 
@@ -60,7 +71,8 @@ The `updated_at` field is not automatically changed by arbitrary direct SQL upda
 |---|---|---|
 | `id` | INTEGER primary key | Database-generated integer key |
 | `court_id` | INTEGER foreign key | `NOT NULL`; references `courts.id`, `ON DELETE CASCADE`; indexed |
-| `source_name` | VARCHAR(150) | `NOT NULL` |
+| `source_name` | VARCHAR(150) | `NOT NULL`; together with non-null `source_identifier` forms unique source identity |
+| `source_identifier` | VARCHAR(200) | Nullable; unique with `source_name` for non-null values |
 | `source_url` | VARCHAR(1000) | `NOT NULL`; URL scheme/host validation not enforced by DB |
 | `source_type` | VARCHAR(40) | `NOT NULL`; controlled category |
 | `last_verified_at` | TIMESTAMPTZ | Nullable in initial schema |
@@ -68,9 +80,9 @@ The `updated_at` field is not automatically changed by arbitrary direct SQL upda
 
 The approved source types are `official`, `open_data`, `reservation_platform`, and `other`.
 
-**Differences from Exercise 1 proposal:** The implemented model uses `source_name`, not `publisher`; `source_url` is `VARCHAR(1000)`, not `TEXT`; `source_identifier` is not yet implemented; `last_verified_at` is nullable; `source_type` is `VARCHAR(40)`. These are deliberate descriptions of the actual migration, not claims that the original proposal was implemented verbatim.
+**Historical differences from Exercise 1 proposal (superseded by later migrations):** The implemented model uses `source_name`, not `publisher`; `source_url` is `VARCHAR(1000)`, not `TEXT`; `source_identifier` is not yet implemented; `last_verified_at` is nullable; `source_type` is `VARCHAR(40)`. These are deliberate descriptions of the actual migration, not claims that the original proposal was implemented verbatim.
 
-A court may have multiple source records. Uniqueness rules, stable upstream identifiers, verification requirements for real imports, operating hours, closures, and restrictions remain future design work.
+A court may have multiple source records. Stable upstream source identity is implemented; cross-source facility reconciliation, approval evidence persistence, operating hours, closures and restrictions remain pending.
 
 ## 5. Data integrity and import
 
@@ -85,6 +97,20 @@ Before Exercise 5 imports:
 - Keep fictional fixtures separate from real court records.
 - Distinguish published operating hours from reservations and physical occupancy.
 - Log import failures without exposing secrets.
+
+### Exercise 5 ingestion architecture
+
+`app/importers/dcgis_adapter.py` validates saved ArcGIS Layer 9 JSON; `schemas.py` represents candidate properties with unknown public access and reservation policies; `repository.py` loads existing identities read-only; `planner.py` classifies actions; `scripts/import_public_courts.py` enforces a read-only comparison on approved disposable databases. The approval manifest is empty. `scripts/apply_public_courts.py` is restricted to `dc_tennis_test`; `service.py` stages insert-or-skip records in a caller-owned transaction and does not implement approved updates. It does not persist the manifest's evidence URL/verification time. Do not describe this as production-ready or a real-data import.
+
+### Migration sequence (current)
+
+| Revision | Change |
+|---|---|
+| `70a0a04f5a58` | Initial `courts` and `court_sources` schema |
+| `b83f1c2d9a60` | Nullable `source_identifier` and `(source_name, source_identifier)` uniqueness |
+| `61174a56cf41` | Nullable `reservation_required` and removal of the false server default |
+
+The nullable-policy downgrade maps `NULL` to `FALSE`, losing the unknown state. Only exercise downgrade on disposable databases, not on valuable records.
 
 ## 6. Migrations and rollback
 

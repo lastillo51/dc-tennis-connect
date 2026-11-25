@@ -1,8 +1,19 @@
 # DC Tennis Connect
 
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
 **A Washington, D.C. tennis court discovery and player coordination platform — built as a hands-on DevSecOps learning project.**
 
-**Current development phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 4: Repository and Service Integration)  
+**Current development phase:** Phase 8 — Exercise 6 (final review and documentation; merge pending)  
 **Previous phase:** Phase 7 — Completed  
 **Project status:** Active development; Phase 7 merged into `main`  
 **Deployment status:** Local development and local kind Kubernetes; not approved for public deployment
@@ -11,7 +22,7 @@
 
 DC Tennis Connect aims to help players discover public tennis courts in Washington, D.C., review published operating and reservation information, find hitting partners, coordinate matches, and obtain Google Maps directions.
 
-The **current application uses three fictional court records** for development and testing. Its frontend and JSON API are functional, but real public court data, player coordination, and official scheduling integrations have not yet been implemented.
+The current frontend and JSON API read court records from PostgreSQL through SQLAlchemy. Fictional court records are used in isolated tests; the verified DC GIS candidate dataset has not been approved or imported into the development application. Player coordination and community scheduling are not implemented.
 
 **Availability disclaimer:** DC Tennis Connect does not reserve public courts, report verified real-time occupancy, or guarantee that a court is physically unoccupied.
 
@@ -25,7 +36,7 @@ The **current application uses three fictional court records** for development a
 ### Implemented and tested
 
 - Python FastAPI backend, modular JSON API, and health endpoint.
-- In-memory fictional court dataset with a shared service layer and Pydantic models.
+- PostgreSQL-backed court service and Pydantic schemas; fictional records remain in isolated test fixtures.
 - Case-insensitive court-name and address search, public-access filtering, and validated query parameters.
 - Server-rendered Jinja2 homepage, court directory, and individual court detail pages.
 - Court details including address, number of courts, access classification, reservation requirement, and operating hours when present.
@@ -40,7 +51,7 @@ The **current application uses three fictional court records** for development a
 ### Planned or incomplete
 
 - Real, authorized Washington, D.C. public court data and source attribution.
-- PostgreSQL persistence for application court and player records (a local PostgreSQL container exists, but application persistence is not integrated).
+- Player data persistence and production-ready court ingestion; PostgreSQL-backed court retrieval is implemented.
 - Player registration, authentication, profiles, and skill ratings.
 - Hitting partner matching, invitations, and match scheduling.
 - Email/SMS notifications, real court schedule synchronization, and native mobile applications.
@@ -59,9 +70,23 @@ The **current application uses three fictional court records** for development a
 | Automated regression tests | Passing at reported checkpoints; rerun before merge |
 | Docker and local kind deployment | Implemented; frontend compatibility verified during Phase 7 exercises |
 | Terraform local foundation | Phase 6 completed |
-| Real public court data and application persistence | Planned — Phase 8 |
+| Court persistence | Implemented in Phase 8; real DPR publication remains pending |
 | Player accounts, matching, and scheduling | Planned — Phase 9 |
 | Public cloud deployment | Planned — Phase 10 |
+
+### Phase 8 local commands and import boundary
+
+```bash
+# From repository root with a configured, ignored .env
+python -m alembic current
+python -m alembic check
+python -m scripts.check_db_connection
+DB_NAME=dc_tennis_test RUN_DB_TESTS=1 python -m pytest app/tests/ -q
+RUN_DB_TESTS=0 python -m pytest app/tests/ -q
+DB_NAME=dc_tennis_test python -m scripts.import_public_courts --dry-run
+```
+
+The dry-run CLI requires a local saved `data/source-evaluation/dpr-tennis-candidates.json` and currently accepts only disposable database names. `scripts/apply_public_courts.py` is **test-only**, requires `--apply --database dc_tennis_test`, and has no approved real facilities in the checked-in manifest. Never run migrations or apply commands against a populated database without confirming the target and backup. See `docs/architecture/database-overview.md` and `docs/runbooks/repository-snapshot-management.md`.
 
 ## 3. Planned Application Features
 

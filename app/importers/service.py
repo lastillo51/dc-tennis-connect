@@ -112,38 +112,3 @@ def import_approved_courts(
         "inserted": inserted,
         "unchanged": unchanged,
     }
-
-
-def test_import_preserves_unknown_reservation_policy(db_session):
-    """Approved fictional imports may have an unknown policy."""
-
-    from sqlalchemy import select
-    from app.db.models.court import Court, CourtSource
-
-    candidate = make_candidate()
-
-    assert candidate.reservation_required is None
-
-    with db_session.begin():
-        result = import_approved_courts(
-            db_session,
-            [candidate],
-            apply=True,
-        )
-
-        assert result["inserted"] == 1
-
-        statement = (
-            select(Court)
-            .join(CourtSource, CourtSource.court_id == Court.id)
-            .where(
-                CourtSource.source_name == "dcgis-dpr-parks",
-                CourtSource.source_identifier
-                == candidate.source_identifier,
-            )
-        )
-
-        imported_court = db_session.scalar(statement)
-
-        assert imported_court is not None
-        assert imported_court.reservation_required is None

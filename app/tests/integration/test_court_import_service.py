@@ -126,7 +126,6 @@ def test_failed_batch_does_not_persist_records(db_session):
 
         assert sources == []
 
-
 def test_import_rolls_back_after_database_failure(
     db_session,
     monkeypatch,
@@ -181,3 +180,40 @@ def test_import_rolls_back_after_database_failure(
     ).all()
 
     assert sources == []
+
+def test_import_preserves_unknown_reservation_policy(db_session):
+    """Approved fictional imports preserve unknown policies."""
+
+    from sqlalchemy import select
+    from app.db.models.court import Court, CourtSource
+
+    candidate = make_candidate().model_copy(
+        update={"reservation_required": None}
+    )
+
+    with db_session.begin():
+        result = import_approved_courts(
+            db_session,
+            [candidate],
+            apply=True,
+        )
+
+        assert result["inserted"] == 1
+
+        statement = (
+            select(Court)
+            .join(
+                CourtSource,
+                CourtSource.court_id == Court.id,
+            )
+            .where(
+                CourtSource.source_name == "dcgis-dpr-parks",
+                CourtSource.source_identifier
+                == candidate.source_identifier,
+            )
+        )
+
+        imported_court = db_session.scalar(statement)
+
+        assert imported_court is not None
+        assert imported_court.reservation_required is None

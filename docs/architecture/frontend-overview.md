@@ -1,15 +1,30 @@
 # DC Tennis Connect — Frontend Architecture
 
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
 > **Project stage:** Phase 7 — Frontend implementation completed and merged into `main`  
-> **Current milestone:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 1: Planning)  
-> **Implementation:** Server-rendered FastAPI/Jinja2 frontend using fictional court data  
+> **Current milestone:** Phase 8 — Exercise 6 final review  
+> **Implementation:** Server-rendered FastAPI/Jinja2 frontend using PostgreSQL-backed court service; fictional test fixtures  
 > **Deployment:** Local development and local Docker/kind verification; not approved for public deployment
 
 ## 1. Purpose and Scope
 
-This document describes the **implemented** frontend architecture of DC Tennis Connect and distinguishes it from future functionality. The frontend helps users browse fictional sample tennis courts, search names and addresses, filter public-access courts, view details, and open Google Maps directions.
+This document describes the **implemented** frontend architecture of DC Tennis Connect and distinguishes it from future functionality. The frontend helps users browse stored tennis court records, search names and addresses, filter public-access courts, view details, and open Google Maps directions.
 
-The application does not reserve courts or verify real-time occupancy. Published hours and availability classifications must not be presented as guarantees that a court is unoccupied. Real Washington, D.C. public court data, player accounts, and match scheduling are outside the current frontend foundation.
+The application does not reserve courts or verify real-time occupancy. Published hours and availability classifications must not be presented as guarantees that a court is unoccupied. Real DPR candidate records have not yet been published. Player accounts and voluntary community scheduling remain future work.
+
+### Current Phase 8 behavior
+
+`app/web/routes.py` uses the shared court service with SQLAlchemy session injection, while templates remain presentation-only. `/web/courts` supports name/address search and public-only filtering; `/web/courts/{court_id}` displays the court details and a fixed-host Google Maps directions URL. `reservation_required=None` is shown as **Unknown**, not **No**. The UI does not implement bookings, real-time occupancy, or official DPR reservations. An empty court directory is possible before approved real data is imported.
 
 ## 2. Technology Stack and Principles
 

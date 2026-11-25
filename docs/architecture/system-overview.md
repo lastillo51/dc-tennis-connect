@@ -1,15 +1,26 @@
 # DC Tennis Connect — System Architecture
 
-> **Current stage:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 3: ORM models and migrations; pending merge)  
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
+> **Current stage:** Phase 8 — Exercise 6 final review; merge pending  
 > **Previous stage:** Phase 7 — Completed; frontend merged into `main`  
 > **Deployment scope:** Local development and testing; not approved for public production deployment.  
 > **Document purpose:** Describe implemented architecture, planned components, and the boundaries between them.
 
 ## 1. Architecture Overview
 
-DC Tennis Connect is a FastAPI application for helping Washington, D.C. tennis players discover courts and, in future phases, coordinate matches. The current application combines a JSON API with server-rendered Jinja2 pages. Both interfaces use shared Pydantic court models and service functions backed by **fictional in-memory sample records**.
+DC Tennis Connect is a FastAPI application for helping Washington, D.C. tennis players discover courts and, in future phases, coordinate matches. The current application combines a JSON API with server-rendered Jinja2 pages. Both interfaces use shared Pydantic court models and service functions backed by **PostgreSQL through SQLAlchemy**; fictional records are retained for isolated tests.
 
-Docker and Docker Compose support local container development. A local Kubernetes cluster created with kind provides an orchestration test environment. Terraform supports infrastructure-as-code learning through local resources and reusable modules. PostgreSQL 17 is running locally with persistent Docker storage. SQLAlchemy 2.x and Psycopg 3 connectivity, ORM models, and Alembic schema migration are implemented and locally verified on the Phase 8 feature branch. **The existing court service still uses fictional in-memory records; database-backed application retrieval has not yet been integrated.**
+Docker and Docker Compose support local container development. A local Kubernetes cluster created with kind provides an orchestration test environment. Terraform supports infrastructure-as-code learning through local resources and reusable modules. PostgreSQL 17 is running locally with persistent Docker storage. SQLAlchemy 2.x and Psycopg 3 connectivity, ORM models, and Alembic schema migration are implemented and locally verified on the Phase 8 feature branch. **Database-backed application retrieval is integrated.**
 
 The application does not reserve public courts or guarantee that a court is unoccupied. Public cloud hosting, verified DC court data, player accounts, and scheduling are not implemented.
 
@@ -33,6 +44,17 @@ Terraform --> Separate local infrastructure exercises
 ```
 
 The frontend calls shared Python services directly; it does not make HTTP requests to its own JSON API.
+
+### Phase 8 implemented request and ingestion flows
+
+```text
+Browser / API client → FastAPI routes → court service → repository / mapper → PostgreSQL
+                                            ↘ Google Maps URL service
+Saved DC GIS Layer 9 JSON → Pydantic validation → source comparison → dry-run report
+Approved manifest (currently empty) → test-only apply CLI → SQLAlchemy transaction
+```
+
+The application does not use real-time occupancy data or official DPR booking integration. The future scheduler will create **voluntary community reservations**, not enforceable official court reservations. The import CLI is not authorized for development/production writes.
 
 ## 2. Core Components and Responsibilities
 

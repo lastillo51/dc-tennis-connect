@@ -1,6 +1,17 @@
 # DC Tennis Connect — DevSecOps Security Policy
 
-**Current project phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 4: Repository and Service Integration)  
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
+**Current project phase:** Phase 8 — Exercise 6 final review; merge pending  
 **Previous project phase:** Phase 7 — Completed  
 **Deployment status:** Local development; not approved for public production deployment.
 
@@ -16,13 +27,24 @@ This document establishes security requirements and development practices for DC
 | Frontend | Jinja2, HTML, CSS, JavaScript, web routes, templates, and static assets |
 | Dependencies | Python packages and third-party libraries |
 | Containers | Docker images and Docker Compose |
-| Database | Local PostgreSQL and future application persistence |
+| Database | Local PostgreSQL-backed court application, isolated test/migration databases, and future production controls |
 | Source control | Git, GitHub, branches, and pull requests |
 | CI/CD | GitHub Actions, Pytest, Semgrep, and Trivy |
 | Infrastructure | Local Kubernetes with kind and Terraform configurations |
 | User data | Future authentication, profiles, availability, and scheduling information |
 
 Update this table when new components are introduced.
+
+### Phase 8 database and ingestion controls (current)
+
+- Database configuration is loaded from ignored environment files; never commit `.env`, connection credentials, or dumps. Validate target database before migrations and writes.
+- SQLAlchemy sessions and parameterized queries separate HTTP handlers from persistence; Jinja2 templates never query the database.
+- Alembic changes are versioned, tested on disposable databases, and require backups/review before applying destructive operations to populated databases.
+- `source_identifier` is unique per source namespace; this does not establish physical facility uniqueness across datasets.
+- DC GIS input is untrusted. Validate attributes and complete responses before planning an import. Unknown public access and official reservation policies must not be invented.
+- Dry-run comparison uses a read-only transaction and restricts database names. The apply CLI is restricted to `dc_tennis_test` and the checked-in approval manifest has no approved facilities.
+- Approval URL/timestamp validation is not equivalent to independent evidence review; approval provenance is **not yet persisted** by the importer. Real publication and production authorization are pending.
+- Integration tests run against isolated PostgreSQL with rollback; CI without PostgreSQL skips database tests and does not replace local integration verification.
 
 ## 3. Security Principles
 

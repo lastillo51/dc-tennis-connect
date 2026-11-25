@@ -1,8 +1,19 @@
 # DC Tennis Connect — Security Findings Register
 
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
 > **Purpose:** Living record of security scans, investigations, remediation evidence, residual risks, and follow-up decisions.  
-> **Current project stage:** Phase 7 — Completed; Phase 8 — In progress (Exercise 3)  
-> **Latest scan reported:** Phase 8 Exercise 3 Trivy filesystem scan (date not supplied); latest scan with a recorded date: 2026-11-08 (Phase 7 frontend image).  
+> **Current project stage:** Phase 7 completed; Phase 8 Exercise 6 documentation/security review in progress  
+> **Latest scan evidence in this register:** Phase 8 Exercise 3 Trivy filesystem scan (date not supplied); new Exercise 6 scans have not been supplied. Historical scan counts are retained below.  
 > **Deployment status:** Local development only; not approved for public deployment.
 
 ## 1. Current Security Overview
@@ -24,6 +35,14 @@ Update this summary when new evidence is verified. Preserve historical results i
 | Container image layers | Packaging tools uninstalled in a later layer | Residual exposure needs assessment |
 
 **Do not combine scan results without matching the target image/configuration, scanner version, vulnerability database, scan date, and options.** In particular, the targeted zero-High result does not invalidate the 44-High full image baseline.
+
+### Exercise 6 security evidence and open work
+
+The supplied source snapshot pins `opentelemetry-api==1.45.2`, but contains no new scan output establishing the current vulnerability status. Historical Trivy image High findings and `SEC-FE-001` remain governed by their recorded evidence and must not be silently closed. The reported GitHub Actions #34 Python test failure was traced to a missing database-dependency override in a no-DB API test; the user reported the CI fix checks completed. Record the successful replacement run ID/URL and commit before declaring the entire workflow verified.
+
+**Implementation review finding (pending remediation):** `app/importers/service.py` includes a `test_import_preserves_unknown_reservation_policy` function referencing `make_candidate` outside a test module. Move this test into `app/tests/integration/test_court_import_service.py` and remove it from production code after checking whether an equivalent test already exists. Do not assert the correction has been made.
+
+**Pre-merge evidence needed:** fresh Semgrep and Trivy reports with timestamps, versions and target hashes; both CI-style and database-enabled pytest results; approval manifest still empty; branch/PR review; no sensitive files staged.
 
 ## 2. Security Scan Baselines
 
@@ -287,17 +306,17 @@ This section records final verification evidence for the frontend security revie
 | Severity | Medium |
 | Affected package | `opentelemetry-api` 1.45.1 |
 | Reported fixed version | 1.45.2 |
-| Status | **Open — remediation verification pending** |
+| Status | **Remediation candidate pinned; post-fix scan evidence pending** |
 | Owner / reviewer | To be recorded |
 | Next review date | To be recorded |
 
 **Finding:** Trivy reported a denial-of-service vulnerability involving quadratic-time parsing of traceparent input. The scan reported one Medium finding and no High or Critical findings in the scanned dependency manifest. This does not establish the absence of other vulnerabilities in container images or deployed environments.
 
-**Remediation:** Update the exact dependency pin from `opentelemetry-api==1.45.1` to `opentelemetry-api==1.45.2`, resolving any dependency conflicts without forcing incompatible versions.
+**Remediation state in supplied repository:** `requirements.txt` pins `opentelemetry-api==1.45.2`. This confirms the pin change, but does **not** prove the finding is resolved until a post-change Trivy scan is recorded.
 
 **Verification checklist:**
 
-- [ ] Confirm the updated version is present in `requirements.txt` and installed in the project virtual environment.
+- [x] Confirm the updated version is pinned in `requirements.txt` (`1.45.2`); installed environment still requires independent verification.
 - [ ] Run `python -m pip install -r requirements.txt` and `python -m pip check` successfully.
 - [ ] Run `RUN_DB_TESTS=1 python -m pytest app/tests/ -q` successfully.
 - [ ] Repeat the Trivy filesystem vulnerability scan and confirm `CVE-2026-126360` is no longer reported.
