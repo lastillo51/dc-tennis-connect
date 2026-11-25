@@ -1,16 +1,26 @@
-from pathlib import Path
+"""Server-rendered frontend routes."""
 
-from fastapi import APIRouter, Request, Query
+from pathlib import Path
+from typing import Annotated
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+)
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
-from app.api.services.court_service import search_courts
-
-from fastapi import HTTPException
-
-from app.api.services.court_service import get_court_by_id
-
+from app.api.services.court_service import (
+    get_court_by_id,
+    search_courts,
+)
 from app.api.services.maps_service import build_google_maps_url
+from app.db.session import get_db
+
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 
@@ -23,6 +33,8 @@ router = APIRouter(
     tags=["web"],
 )
 
+DbSession = Annotated[Session, Depends(get_db)]
+
 
 @router.get("", response_class=HTMLResponse)
 def homepage(request: Request):
@@ -34,13 +46,16 @@ def homepage(request: Request):
         },
     )
 
+
 @router.get("/courts", response_class=HTMLResponse)
 def court_directory(
     request: Request,
+    db: DbSession,
     q: str = Query(default="", max_length=100),
     public_only: bool = False,
 ):
     courts = search_courts(
+        db,
         query=q,
         public_only=public_only,
     )
@@ -57,9 +72,20 @@ def court_directory(
         },
     )
 
-@router.get("/courts/{court_id}", response_class=HTMLResponse)
-def court_detail(request: Request, court_id: int):
-    court = get_court_by_id(court_id)
+
+@router.get(
+    "/courts/{court_id}",
+    response_class=HTMLResponse,
+)
+def court_detail(
+    request: Request,
+    court_id: int,
+    db: DbSession,
+):
+    court = get_court_by_id(
+        db,
+        court_id,
+    )
 
     if court is None:
         raise HTTPException(
@@ -67,7 +93,9 @@ def court_detail(request: Request, court_id: int):
             detail="Court not found",
         )
 
-    google_maps_url = build_google_maps_url(court.location)
+    google_maps_url = build_google_maps_url(
+        court.location
+    )
 
     return templates.TemplateResponse(
         request=request,

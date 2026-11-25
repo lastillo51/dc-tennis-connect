@@ -1,3 +1,6 @@
+import os
+import pytest
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -22,7 +25,7 @@ def test_homepage_contains_skip_link():
     assert "Skip to main content" in response.text
 
 
-def test_directory_search_has_label():
+def test_directory_search_has_label(court_test_data):
     response = client.get("/web/courts")
 
     assert response.status_code == 200
@@ -30,8 +33,13 @@ def test_directory_search_has_label():
     assert 'id="court-search"' in response.text
 
 
-def test_court_detail_has_primary_heading():
-    court = get_all_courts()[0]
+@pytest.mark.skipif(
+    os.getenv("RUN_DB_TESTS") != "1",
+    reason="Set RUN_DB_TESTS=1 for PostgreSQL-backed tests",
+)
+
+def test_court_detail_has_primary_heading(court_test_data):
+    court = get_all_courts(court_test_data)[0]
 
     response = client.get(f"/web/courts/{court.id}")
 
@@ -40,8 +48,13 @@ def test_court_detail_has_primary_heading():
     assert court.name in response.text
 
 
-def test_external_maps_link_has_security_attributes():
-    court = get_all_courts()[0]
+@pytest.mark.skipif(
+    os.getenv("RUN_DB_TESTS") != "1",
+    reason="Set RUN_DB_TESTS=1 for PostgreSQL-backed tests",
+)
+
+def test_external_maps_link_has_security_attributes(court_test_data):
+    court = get_all_courts(court_test_data)[0]
 
     response = client.get(f"/web/courts/{court.id}")
 

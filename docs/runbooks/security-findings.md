@@ -1,8 +1,19 @@
 # DC Tennis Connect — Security Findings Register
 
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
 > **Purpose:** Living record of security scans, investigations, remediation evidence, residual risks, and follow-up decisions.  
-> **Current project stage:** Phase 7 — Completed; Phase 8 next  
-> **Latest dated scan recorded:** 2026-11-08 (Phase 7 Trivy frontend image); other scan dates remain pending.  
+> **Current project stage:** Phase 7 completed; Phase 8 Exercise 6 documentation/security review in progress  
+> **Latest scan evidence in this register:** Phase 8 Exercise 3 Trivy filesystem scan (date not supplied); new Exercise 6 scans have not been supplied. Historical scan counts are retained below.  
 > **Deployment status:** Local development only; not approved for public deployment.
 
 ## 1. Current Security Overview
@@ -18,11 +29,20 @@ Update this summary when new evidence is verified. Preserve historical results i
 | Trivy full image baseline | 164 findings, including 44 High (2026-10-25) | Historical baseline; unresolved findings require triage |
 | Trivy Phase 7 frontend image | 189 recorded vulnerability findings, including 49 High (2026-11-08, Trivy 0.76.1) | Image ID recorded; confirm image identity against Docker, secret results, and report provenance; triage High findings |
 | Trivy Terraform IaC scan | 0 findings recorded; date and scanner version missing | Reported zero; evidence metadata incomplete |
+| Trivy Phase 8 dependency scan | 1 Medium finding in `requirements.txt`: `opentelemetry-api` 1.45.1, CVE-2026-126360; Trivy 0.76.1; date not supplied | Patched version 1.45.2 reported; dependency update and post-fix verification not yet evidenced |
 | GitHub Actions | Four jobs reported passing during Phase 6, including Terraform IaC | Run URL, commit, and tool versions still need recording; Phase 7 finding not yet verified in CI |
 | Post-remediation container runtime | No explicit evidence linked in this register | Evidence not yet recorded |
 | Container image layers | Packaging tools uninstalled in a later layer | Residual exposure needs assessment |
 
 **Do not combine scan results without matching the target image/configuration, scanner version, vulnerability database, scan date, and options.** In particular, the targeted zero-High result does not invalidate the 44-High full image baseline.
+
+### Exercise 6 security evidence and open work
+
+The supplied source snapshot pins `opentelemetry-api==1.45.2`, but contains no new scan output establishing the current vulnerability status. Historical Trivy image High findings and `SEC-FE-001` remain governed by their recorded evidence and must not be silently closed. The reported GitHub Actions #34 Python test failure was traced to a missing database-dependency override in a no-DB API test; the user reported the CI fix checks completed. Record the successful replacement run ID/URL and commit before declaring the entire workflow verified.
+
+**Implementation review finding (pending remediation):** `app/importers/service.py` includes a `test_import_preserves_unknown_reservation_policy` function referencing `make_candidate` outside a test module. Move this test into `app/tests/integration/test_court_import_service.py` and remove it from production code after checking whether an equivalent test already exists. Do not assert the correction has been made.
+
+**Pre-merge evidence needed:** fresh Semgrep and Trivy reports with timestamps, versions and target hashes; both CI-style and database-enabled pytest results; approval manifest still empty; branch/PR review; no sensitive files staged.
 
 ## 2. Security Scan Baselines
 
@@ -170,6 +190,38 @@ The counts total 189 and are preserved as supplied. **They are not a verified cl
 - **Next checks:** Confirm the recorded image ID against `docker image inspect`; confirm the JSON report and exact command; enter the secret-finding count from the completed dual-scanner run; inspect the 49 High advisories, fixes and exposure; record decisions per advisory or affected component.
 - **Remediation:** Rebuild and rescan after approved changes. Preserve this baseline for historical comparison.
 
+### 2.7 Trivy — Phase 8 Exercise 3 Python Dependency Scan
+
+**Record status:** Initial vulnerability finding reported by the developer; remediation and post-fix scan results have not yet been supplied. This filesystem dependency scan is not comparable to the container-image baselines in §§2.1 and 2.6.
+
+| Field | Recorded value |
+|---|---|
+| Scanner | Trivy 0.76.1 (reported) |
+| Scan date | Not supplied — enter actual date from scan evidence |
+| Phase | Phase 8, Exercise 3, Step 11H |
+| Scan type | Filesystem vulnerability scan (`pip` dependency manifest) |
+| Target | `requirements.txt` |
+| Command | `trivy fs --scanners vuln --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL .` |
+| Report source | Developer-provided terminal output; JSON report not supplied |
+| Branch / commit | `feature/postgresql-court-data`; exact scan commit not supplied |
+| Vulnerability | `CVE-2026-126360` — quadratic-time traceparent parsing, potential denial of service |
+| Package / vulnerable version | `opentelemetry-api` 1.45.1 |
+| Fixed version reported by Trivy | 1.45.2 |
+| Remediation status | **Pending verification** — updated manifest and successful rescan not yet evidenced |
+
+| Severity | Findings |
+|---|---:|
+| Critical | 0 |
+| High | 0 |
+| Medium | 1 |
+| Low | 0 |
+| Unknown | 0 |
+| **Total** | **1** |
+
+**Risk assessment:** The project remains in local development. Actual exploitability depends on use of the affected traceparent parser and exposure to untrusted inputs; this has not been established. Continue local development with the finding tracked, but do not treat deferral as remediation or production approval.
+
+**Remediation plan:** Pin `opentelemetry-api==1.45.2` in `requirements.txt`, install the updated manifest, verify `python -m pip check`, run `RUN_DB_TESTS=1 python -m pytest app/tests/ -q`, and repeat the Trivy filesystem scan. Record the actual scan date, resulting count, installed version, and Git revision. Only then change the finding to **Resolved** if the advisory is no longer reported.
+
 ## 3. Individual Security Findings
 
 Keep one row per investigated advisory or configuration issue. Preserve closed findings for traceability. The 49 High findings in the Phase 7 image are an aggregate scan count, not 49 individually triaged records.
@@ -180,6 +232,7 @@ Keep one row per investigated advisory or configuration issue. Preserve closed f
 | SEC-002 | `setuptools` | CVE-2025-47273 | 70.3.0 | 78.1.1 | Investigating — source unconfirmed |
 | SEC-003 | `urllib3` | CVE-2026-97687 | 2.7.0 | 2.8.0 | Investigating — absent from targeted rescan |
 | SEC-004 | `urllib3` | CVE-2026-97689 | 2.7.0 | 2.8.0 | Investigating — absent from targeted rescan |
+| SEC-018 | `opentelemetry-api` | CVE-2026-126360 | 1.45.1 | 1.45.2 | Open — remediation verification pending |
 
 ### 3.1 Packaging Dependency Investigation and Remediation Evidence
 
@@ -242,7 +295,36 @@ This section records final verification evidence for the frontend security revie
 
 **Evidence to complete:** Actual test counts, Semgrep version, scan date, Git commit SHA, finding count, local report path (if saved), reviewer, final disposition, and reassessment date. If the generic rule still flags the trusted dynamic `href`, document the rule-specific false-positive reasoning and decide how the blocking CI gate will handle the reviewed result. Do not disable the entire ruleset.
 
-### 3.4 Finding Status Definitions
+### 3.4 SEC-018 — OpenTelemetry Traceparent Parsing Denial of Service
+
+| Field | Value |
+|---|---|
+| Finding ID | `SEC-018` |
+| Advisory | `CVE-2026-126360` |
+| Scanner / scope | Trivy 0.76.1; filesystem vulnerability scan of `requirements.txt` |
+| First detected | Phase 8 Exercise 3; exact scan date not supplied |
+| Severity | Medium |
+| Affected package | `opentelemetry-api` 1.45.1 |
+| Reported fixed version | 1.45.2 |
+| Status | **Remediation candidate pinned; post-fix scan evidence pending** |
+| Owner / reviewer | To be recorded |
+| Next review date | To be recorded |
+
+**Finding:** Trivy reported a denial-of-service vulnerability involving quadratic-time parsing of traceparent input. The scan reported one Medium finding and no High or Critical findings in the scanned dependency manifest. This does not establish the absence of other vulnerabilities in container images or deployed environments.
+
+**Remediation state in supplied repository:** `requirements.txt` pins `opentelemetry-api==1.45.2`. This confirms the pin change, but does **not** prove the finding is resolved until a post-change Trivy scan is recorded.
+
+**Verification checklist:**
+
+- [x] Confirm the updated version is pinned in `requirements.txt` (`1.45.2`); installed environment still requires independent verification.
+- [ ] Run `python -m pip install -r requirements.txt` and `python -m pip check` successfully.
+- [ ] Run `RUN_DB_TESTS=1 python -m pytest app/tests/ -q` successfully.
+- [ ] Repeat the Trivy filesystem vulnerability scan and confirm `CVE-2026-126360` is no longer reported.
+- [ ] Record scan date, scanner version, Git commit, result count, reviewer, and remediation decision.
+
+**Closure rule:** Mark **Resolved** only after the post-upgrade scan and regression evidence are recorded. A local development deferral is not a finding closure and does not authorize public deployment.
+
+### 3.5 Finding Status Definitions
 
 | Status | Meaning |
 |---|---|
@@ -336,6 +418,7 @@ Deferral is **not** remediation or formal risk acceptance. A formal exception mu
 | ACT-015 | Complete Step 11H final security regression evidence | Medium | Pending | Targeted and full test counts, dependency check, Semgrep rescan and SEC-FE-001 disposition |
 | ACT-016 | Complete Phase 7 frontend image scan evidence and secret review | High | Partially recorded | Date/version recorded; verify image ID and JSON report, enter secret count and commit SHA |
 | ACT-017 | Triage Phase 7 frontend image High findings | High | Open | Review 49 recorded High findings, affected components, fixes, exposure and decisions |
+| ACT-018 | Remediate and verify OpenTelemetry advisory `SEC-018` | Medium | Pending verification | Pin 1.45.2, pass dependency and regression checks, rescan, record date/commit and reviewer |
 
 ## 7. Scan History and Repeatable Workflow
 
@@ -352,6 +435,7 @@ Append new rows; do not overwrite older results. A dash means not applicable or 
 | Not recorded | Trivy Terraform IaC | `terraform/` | 0 | 0 | 0 | 0 | 0 | Reported 0; metadata incomplete; §2.4 |
 | Not recorded | Semgrep `p/security-audit`, Phase 7 | `app/` | — | — | — | — | — | 1 blocking finding `SEC-FE-001`; severity counts not recorded; §2.5 |
 | 2026-11-08 | Trivy image, Phase 7 frontend | `dc-tennis-connect:frontend-v1` | 0 | 49 | 75 | 65 | 0 | 189 recorded vulnerabilities; version 0.76.1; secret results and image ID confirmation pending; §2.6 |
+| Not supplied | Trivy 0.76.1 filesystem vulnerability scan, Phase 8 Exercise 3 | `requirements.txt` | 0 | 0 | 1 | 0 | 0 | `CVE-2026-126360` in `opentelemetry-api` 1.45.1; fixed version 1.45.2 reported; post-fix rescan pending; §2.7 |
 **Pending:** Append a separate dated Phase 7 Semgrep rescan row when its result is recorded. Do not overwrite the initial finding.
 
 ### 7.2 Procedure for Future Scans
@@ -390,3 +474,16 @@ This Markdown register is intended for Git. Keep raw scanner JSON, Docker image 
 **Review this register after:** A new Trivy or Semgrep scan; dependency, base-image, or Terraform change; CI policy change; completion of an open action; or preparation for cloud deployment.
 
 **Project context:** DC Tennis Connect runs locally, uses fictional court data, and does not currently store production player information. This limits current external exposure but does not eliminate development-environment risk or future deployment obligations.
+
+## Phase 8 Exercise 4 — Consolidated Documentation Checkpoint (2026-11-18)
+
+**Status:** Implementation in progress; final Exercise 4 regression, security, deployment review, commit and CI confirmation remain subject to verification. This checkpoint does not declare Phase 8 complete.
+
+- PostgreSQL 17 runs locally through Docker Compose. SQLAlchemy 2.x, Psycopg 3, and Alembic are configured. The initial `courts` and `court_sources` schema is at Alembic revision `70a0a04f5a58`; upgrades, downgrades, and re-upgrades were verified against a disposable database.
+- The application court service now uses `app/db/repositories/court_repository.py` and `app/api/mappers/court_mapper.py` to retrieve and map persistent records to the existing Pydantic `Court` response. FastAPI JSON and Jinja2 court routes use the `get_db` session dependency.
+- Existing API paths, nested location fields, search and public filtering, HTTP 404/422 handling, and trusted Google Maps directions generation remain the intended compatibility contract.
+- The `dc_tennis_test` database holds transaction-isolated fictional fixtures for tests. Existing three-court assumptions are being adapted to those fixtures. The latest reported full run was 80 passed, 2 failed, 1 warning; the two accessibility-test failures were traced to obsolete service signatures, and a subsequent syntax error was identified. A clean final full-suite result has not yet been supplied.
+- The normal development database is not seeded with fictional fixtures; real public court records, verified operating hours and closure persistence, provenance-based import, and scheduling remain future work. Published hours must not be presented as guaranteed occupancy or official reservations.
+- PostgreSQL integration tests are opt-in through `RUN_DB_TESTS=1`; CI without a PostgreSQL service skips database-dependent tests. A PostgreSQL-backed CI job remains planned. Container/Kubernetes database networking and production-readiness require separate validation.
+- Security review continues to track `SEC-FE-001`, historical Trivy image findings, and the Phase 8 OpenTelemetry advisory `CVE-2026-126360`. Record a resolved status only with actual patched-dependency and rescan evidence; preserve all historical results.
+- **Documentation cadence:** Routine documentation edits are deferred after this checkpoint until Phase 8 Exercise 6. Continue recording consequential security findings, architecture decisions, and migration changes when they occur. Before final merge, reconcile all eight canonical project documents against the actual repository and verified test/CI evidence.

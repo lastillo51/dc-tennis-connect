@@ -1,15 +1,26 @@
 # DC Tennis Connect — System Architecture
 
-> **Current stage:** Phase 7 — Completed; frontend merged into `main`  
-> **Next stage:** Phase 8 — PostgreSQL application persistence and real public court data  
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
+> **Current stage:** Phase 8 — Exercise 6 final review; merge pending  
+> **Previous stage:** Phase 7 — Completed; frontend merged into `main`  
 > **Deployment scope:** Local development and testing; not approved for public production deployment.  
 > **Document purpose:** Describe implemented architecture, planned components, and the boundaries between them.
 
 ## 1. Architecture Overview
 
-DC Tennis Connect is a FastAPI application for helping Washington, D.C. tennis players discover courts and, in future phases, coordinate matches. The current application combines a JSON API with server-rendered Jinja2 pages. Both interfaces use shared Pydantic court models and service functions backed by **fictional in-memory sample records**.
+DC Tennis Connect is a FastAPI application for helping Washington, D.C. tennis players discover courts and, in future phases, coordinate matches. The current application combines a JSON API with server-rendered Jinja2 pages. Both interfaces use shared Pydantic court models and service functions backed by **PostgreSQL through SQLAlchemy**; fictional records are retained for isolated tests.
 
-Docker and Docker Compose support local container development. A local Kubernetes cluster created with kind provides an orchestration test environment. Terraform supports infrastructure-as-code learning through local resources and reusable modules. PostgreSQL is available in the local container environment but **application court and player records are not yet persisted there**.
+Docker and Docker Compose support local container development. A local Kubernetes cluster created with kind provides an orchestration test environment. Terraform supports infrastructure-as-code learning through local resources and reusable modules. PostgreSQL 17 is running locally with persistent Docker storage. SQLAlchemy 2.x and Psycopg 3 connectivity, ORM models, and Alembic schema migration are implemented and locally verified on the Phase 8 feature branch. **Database-backed application retrieval is integrated.**
 
 The application does not reserve public courts or guarantee that a court is unoccupied. Public cloud hosting, verified DC court data, player accounts, and scheduling are not implemented.
 
@@ -34,6 +45,17 @@ Terraform --> Separate local infrastructure exercises
 
 The frontend calls shared Python services directly; it does not make HTTP requests to its own JSON API.
 
+### Phase 8 implemented request and ingestion flows
+
+```text
+Browser / API client → FastAPI routes → court service → repository / mapper → PostgreSQL
+                                            ↘ Google Maps URL service
+Saved DC GIS Layer 9 JSON → Pydantic validation → source comparison → dry-run report
+Approved manifest (currently empty) → test-only apply CLI → SQLAlchemy transaction
+```
+
+The application does not use real-time occupancy data or official DPR booking integration. The future scheduler will create **voluntary community reservations**, not enforceable official court reservations. The import CLI is not authorized for development/production writes.
+
 ## 2. Core Components and Responsibilities
 
 | Component | Implementation | Current status |
@@ -43,7 +65,9 @@ The frontend calls shared Python services directly; it does not make HTTP reques
 | Court retrieval and search | `app/api/services/court_service.py` | Implemented |
 | Google Maps directions | `app/api/services/maps_service.py` | Implemented |
 | Application records | In-memory fictional court dataset | Development-only |
-| PostgreSQL | Local container with persistent storage | Configured; application persistence planned |
+| PostgreSQL | PostgreSQL 17 in Docker Compose with persistent storage and localhost-only host port | Running and verified; court tables created, application data migration pending |
+| Database access foundation | `app/db/session.py`, SQLAlchemy 2.x, Psycopg 3 | Engine, session factory, `get_db()` and standalone connectivity diagnostic verified |
+| ORM and migrations | `app/db/base.py`, `app/db/models/court.py`, `alembic/` | Initial schema implemented and verified locally; merge pending |
 | Docker | Application image and Compose configuration | Implemented locally |
 | Kubernetes | kind cluster, Deployment, Service, ConfigMap, probes, security context | Implemented locally |
 | Terraform | Local environments, modules, validation and IaC scans | Foundation completed |
@@ -119,6 +143,18 @@ Each source must be checked for accuracy, permitted use, and update frequency be
 ### 3.3 Planned validation and freshness
 
 Future persisted court records should distinguish published operating hours, reservable slots, published reservations, first-come-first-served access, known closures, and unknown availability. Where available, record source attribution, verification timestamps, and date-specific restrictions. Do not represent stale or unverified information as confirmed availability.
+
+### 3.4 Implemented Phase 8 database foundation (Exercises 2–3)
+
+The `courts` and `court_sources` PostgreSQL tables were created by Alembic revision `70a0a04f5a58`. The schema has primary keys, a foreign key from `court_sources.court_id` to `courts.id` with `ON DELETE CASCADE`, an index on `court_sources.court_id`, non-null requirements, court count and coordinate checks, and controlled availability/source classifications. Timestamp columns use timezone-aware PostgreSQL types.
+
+The ORM models live in `app/db/models/court.py`, registered through `app/db/base.py`. The SQLAlchemy engine and session factory in `app/db/session.py` use credentials from ignored local configuration and a Psycopg connection. Alembic manages schema changes; the application does not call `Base.metadata.create_all()`.
+
+The initial upgrade, downgrade, and re-upgrade were verified on a disposable database; the normal development database remained intact. ORM metadata, migration structure, schema constraints, and database connectivity have automated Pytest coverage. PostgreSQL integration tests are explicitly enabled using `RUN_DB_TESTS=1` and skip in CI-style runs without PostgreSQL.
+
+The current schema uses `source_name`, `source_url`, `source_type`, and nullable `last_verified_at`; upstream source identifiers and verified real data are future enhancements. There are no dedicated operating-hours or closures tables yet. The database schema does not itself enforce nonblank names, positive IDs, URL format, or source freshness; application/import validation is required.
+
+**Boundary:** These tables do not yet back the FastAPI court service, JSON API, or Jinja2 templates. Exercise 4 introduces the repository/service mapping and Exercise 5 handles verified public court data.
 
 ## 4. Google Maps Navigation
 
@@ -218,12 +254,26 @@ Public deployment should be gated on verified operational and security readiness
 | Phases 1–6 local DevSecOps foundations | Completed |
 | Phase 7 frontend pages, court search, details, Maps navigation | Implemented, verified, and merged into `main` |
 | Phase 7 accessibility, security and deployment hardening | Local implementation and verification completed; outstanding Semgrep/Trivy findings remain tracked |
-| Phase 8 real court data and PostgreSQL persistence | Planned |
+| Phase 8 PostgreSQL connectivity and local schema | Implemented and verified on feature branch; merge pending |
+| Phase 8 database-backed court service and real court data | Planned — Exercises 4–5 |
 | Phase 9 player accounts and scheduling | Planned |
 | Phase 10 cloud deployment | Planned |
 | Phase 11 production security and operations | Planned |
 
 Update this document when an implemented route, component, data source, deployment mechanism, or security boundary changes. Keep historical verification evidence in the relevant runbooks and do not silently replace planned capabilities with claims of implementation.
+
+## Phase 8 — Persistence Architecture and Implementation Status
+
+**Status:** Exercises 2–3 implemented and locally verified; awaiting feature-branch review/merge. Exercises 4–5 remain planned.
+
+The target data path is FastAPI web/JSON routes → shared court service → SQLAlchemy repository → PostgreSQL (Psycopg 3). The PostgreSQL connection module and ORM tables are implemented, but the repository layer and service mapping are **not yet connected** to application routes. Phase 7 still reads fictional sample court records.
+
+The initial persistent entities are `courts` (identity, address, optional coordinates, court count, access and availability classification, timestamps) and `court_sources` (court foreign key, source name/URL/type, nullable verification timestamp). The schema is managed through Alembic revision `70a0a04f5a58`. Operating hours, closures, source identifier/uniqueness rules, and import provenance validation remain future design work.
+
+PostgreSQL 17 runs locally through Docker Compose with persistent storage and localhost-only port publication. Database credentials remain in ignored environment files. A standalone diagnostic, SQLAlchemy integration tests, ORM unit tests, Alembic revision/schema checks, and disposable-database rollback verification support this implementation.
+
+**Data trust boundary:** Import only information whose reuse is authorized; validate fields and duplicate identities; retain provenance and verification timestamps; distinguish published hours from physical occupancy. Google Maps URLs remain derived from trusted location fields. See `docs/architecture/database-overview.md` for the detailed implemented schema and outstanding gaps.
+
 
 ## 11. Related Documentation
 
@@ -235,3 +285,16 @@ Update this document when an implemented route, component, data source, deployme
 - `docs/security/security-policy.md` — security requirements.
 - `docs/runbooks/security-findings.md` — scan baselines, findings, and decisions.
 - `.github/workflows/security-ci.yml` — CI implementation.
+
+## Phase 8 Exercise 4 — Consolidated Documentation Checkpoint (2026-11-18)
+
+**Status:** Implementation in progress; final Exercise 4 regression, security, deployment review, commit and CI confirmation remain subject to verification. This checkpoint does not declare Phase 8 complete.
+
+- PostgreSQL 17 runs locally through Docker Compose. SQLAlchemy 2.x, Psycopg 3, and Alembic are configured. The initial `courts` and `court_sources` schema is at Alembic revision `70a0a04f5a58`; upgrades, downgrades, and re-upgrades were verified against a disposable database.
+- The application court service now uses `app/db/repositories/court_repository.py` and `app/api/mappers/court_mapper.py` to retrieve and map persistent records to the existing Pydantic `Court` response. FastAPI JSON and Jinja2 court routes use the `get_db` session dependency.
+- Existing API paths, nested location fields, search and public filtering, HTTP 404/422 handling, and trusted Google Maps directions generation remain the intended compatibility contract.
+- The `dc_tennis_test` database holds transaction-isolated fictional fixtures for tests. Existing three-court assumptions are being adapted to those fixtures. The latest reported full run was 80 passed, 2 failed, 1 warning; the two accessibility-test failures were traced to obsolete service signatures, and a subsequent syntax error was identified. A clean final full-suite result has not yet been supplied.
+- The normal development database is not seeded with fictional fixtures; real public court records, verified operating hours and closure persistence, provenance-based import, and scheduling remain future work. Published hours must not be presented as guaranteed occupancy or official reservations.
+- PostgreSQL integration tests are opt-in through `RUN_DB_TESTS=1`; CI without a PostgreSQL service skips database-dependent tests. A PostgreSQL-backed CI job remains planned. Container/Kubernetes database networking and production-readiness require separate validation.
+- Security review continues to track `SEC-FE-001`, historical Trivy image findings, and the Phase 8 OpenTelemetry advisory `CVE-2026-126360`. Record a resolved status only with actual patched-dependency and rescan evidence; preserve all historical results.
+- **Documentation cadence:** Routine documentation edits are deferred after this checkpoint until Phase 8 Exercise 6. Continue recording consequential security findings, architecture decisions, and migration changes when they occur. Before final merge, reconcile all eight canonical project documents against the actual repository and verified test/CI evidence.

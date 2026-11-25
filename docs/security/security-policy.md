@@ -1,7 +1,18 @@
 # DC Tennis Connect — DevSecOps Security Policy
 
-**Current project phase:** Phase 7 — Completed  
-**Next project phase:** Phase 8 — PostgreSQL application persistence and real public court data  
+> **Phase 8 Exercise 6 current-state review (2026-11-25; source snapshot `21e53c4534bd989ff1df5c7422960b85cd9f30b8`).** The sections below record the implemented Phase 8 state. Older planning/checkpoint sections retained later in this file are historical and must not be read as the current implementation status. This update is prepared for review on `feature/postgresql-court-data`; no merge into `main` is asserted.
+
+## Phase 8 Exercise 6 — Verified implementation and remaining scope
+
+- **Implemented in the supplied repository:** PostgreSQL 17 Docker Compose persistence; SQLAlchemy/Psycopg sessions and ORM; Alembic revisions `70a0a04f5a58` → `b83f1c2d9a60` → `61174a56cf41`; PostgreSQL-backed court service, JSON API and Jinja2 pages; Google Maps directions; DC GIS Layer 9 validation, source-identity comparison, dry-run CLI, approval manifest and test-only import command.
+- **Data source evaluation (reported during Exercise 5):** 50 DPR candidate properties, 148 source-reported courts, 49 marked active and one with unknown active status (Oxon Run Park, `DPR_0501`). These are candidate/source counts, **not** imported, verified-open, or physically available courts. The JSON download is local and excluded from the Git archive.
+- **Not complete:** real DPR record publication; independently verified access and hours for all candidates; persisted approval evidence and verification timestamps for imported records; cross-source duplicate reconciliation; safe updates and production import authorization; player accounts; voluntary community scheduling and QR-code adoption.
+- **Scheduling policy:** Future bookings will be voluntary commitments managed by DC Tennis Connect, independent of official DPR reservation systems. They confer no exclusive right to a court and cannot guarantee occupancy or availability. Unknown official reservation requirements remain `NULL` and display as “Unknown.”
+- **Release boundary:** Local development only. Exercise 6 documentation, security verification, PR review and merge remain pending.
+
+
+**Current project phase:** Phase 8 — Exercise 6 final review; merge pending  
+**Previous project phase:** Phase 7 — Completed  
 **Deployment status:** Local development; not approved for public production deployment.
 
 ## 1. Purpose
@@ -16,13 +27,24 @@ This document establishes security requirements and development practices for DC
 | Frontend | Jinja2, HTML, CSS, JavaScript, web routes, templates, and static assets |
 | Dependencies | Python packages and third-party libraries |
 | Containers | Docker images and Docker Compose |
-| Database | Local PostgreSQL and future application persistence |
+| Database | Local PostgreSQL-backed court application, isolated test/migration databases, and future production controls |
 | Source control | Git, GitHub, branches, and pull requests |
 | CI/CD | GitHub Actions, Pytest, Semgrep, and Trivy |
 | Infrastructure | Local Kubernetes with kind and Terraform configurations |
 | User data | Future authentication, profiles, availability, and scheduling information |
 
 Update this table when new components are introduced.
+
+### Phase 8 database and ingestion controls (current)
+
+- Database configuration is loaded from ignored environment files; never commit `.env`, connection credentials, or dumps. Validate target database before migrations and writes.
+- SQLAlchemy sessions and parameterized queries separate HTTP handlers from persistence; Jinja2 templates never query the database.
+- Alembic changes are versioned, tested on disposable databases, and require backups/review before applying destructive operations to populated databases.
+- `source_identifier` is unique per source namespace; this does not establish physical facility uniqueness across datasets.
+- DC GIS input is untrusted. Validate attributes and complete responses before planning an import. Unknown public access and official reservation policies must not be invented.
+- Dry-run comparison uses a read-only transaction and restricts database names. The apply CLI is restricted to `dc_tennis_test` and the checked-in approval manifest has no approved facilities.
+- Approval URL/timestamp validation is not equivalent to independent evidence review; approval provenance is **not yet persisted** by the importer. Real publication and production authorization are pending.
+- Integration tests run against isolated PostgreSQL with rollback; CI without PostgreSQL skips database tests and does not replace local integration verification.
 
 ## 3. Security Principles
 
@@ -218,6 +240,20 @@ Before cloud provisioning, evaluate encrypted remote state, access controls, loc
 
 Before storing real player information, implement appropriate authentication, authorization, session security, access controls for profiles and schedules, protection of stored/transmitted data, and data retention/deletion practices.
 
+### Phase 8 — Database and Public Data Ingestion Security (Planned)
+
+- Use dedicated least-privilege PostgreSQL credentials supplied through approved local configuration or secrets management; never commit passwords or connection URLs containing secrets.
+- Restrict PostgreSQL network exposure; do not publish its port to the internet. Separate application access from migration/administrative privileges where feasible.
+- Use SQLAlchemy parameter binding; do not interpolate untrusted values into raw SQL or dynamic SQL identifiers.
+- Review and version-control Alembic migrations. Test migration upgrade paths and establish a backup/restore approach before loading valuable records.
+- Validate imported public data, including source authorization, required fields, coordinates, duplicates, and timestamps. Treat third-party data as untrusted and never execute it as code or HTML.
+- Avoid logging secrets, full connection strings, or unnecessary personal information. Keep fictional test data distinct from verified public records.
+- Re-run tests and appropriate Semgrep/Trivy scans after introducing SQLAlchemy, Psycopg, Alembic, or new database containers. Preserve unresolved Phase 7 findings and document new evidence in the findings register.
+- Before cloud deployment, evaluate encryption in transit and at rest, database identity and access, network isolation, backups, recovery, and operational monitoring.
+
+**Exercise 1 status:** Requirements only. Database dependencies and production database access controls have not yet been implemented.
+
+
 ## 10. GitHub Actions Security
 
 Workflows should use least-privilege token permissions, avoid unnecessary secrets, use trusted third-party actions, apply timeouts and concurrency controls, and fail when required tests or scanner execution fails. The current workflow supports push filters for `main`, `security/**`, `infra/**`, and, after the Phase 7 trigger update, `feature/**`; it also supports pull requests targeting `main` and manual dispatch. Verify the committed workflow before relying on a trigger. Pin third-party actions to verified commit SHAs as part of future hardening. Review workflow changes before merging.
@@ -269,3 +305,16 @@ Update status and date when a revision is actually approved and merged.
 | `docker/compose.yaml` | Local application and database services |
 
 Add references as new documentation is created.
+
+## Phase 8 Exercise 4 — Consolidated Documentation Checkpoint (2026-11-18)
+
+**Status:** Implementation in progress; final Exercise 4 regression, security, deployment review, commit and CI confirmation remain subject to verification. This checkpoint does not declare Phase 8 complete.
+
+- PostgreSQL 17 runs locally through Docker Compose. SQLAlchemy 2.x, Psycopg 3, and Alembic are configured. The initial `courts` and `court_sources` schema is at Alembic revision `70a0a04f5a58`; upgrades, downgrades, and re-upgrades were verified against a disposable database.
+- The application court service now uses `app/db/repositories/court_repository.py` and `app/api/mappers/court_mapper.py` to retrieve and map persistent records to the existing Pydantic `Court` response. FastAPI JSON and Jinja2 court routes use the `get_db` session dependency.
+- Existing API paths, nested location fields, search and public filtering, HTTP 404/422 handling, and trusted Google Maps directions generation remain the intended compatibility contract.
+- The `dc_tennis_test` database holds transaction-isolated fictional fixtures for tests. Existing three-court assumptions are being adapted to those fixtures. The latest reported full run was 80 passed, 2 failed, 1 warning; the two accessibility-test failures were traced to obsolete service signatures, and a subsequent syntax error was identified. A clean final full-suite result has not yet been supplied.
+- The normal development database is not seeded with fictional fixtures; real public court records, verified operating hours and closure persistence, provenance-based import, and scheduling remain future work. Published hours must not be presented as guaranteed occupancy or official reservations.
+- PostgreSQL integration tests are opt-in through `RUN_DB_TESTS=1`; CI without a PostgreSQL service skips database-dependent tests. A PostgreSQL-backed CI job remains planned. Container/Kubernetes database networking and production-readiness require separate validation.
+- Security review continues to track `SEC-FE-001`, historical Trivy image findings, and the Phase 8 OpenTelemetry advisory `CVE-2026-126360`. Record a resolved status only with actual patched-dependency and rescan evidence; preserve all historical results.
+- **Documentation cadence:** Routine documentation edits are deferred after this checkpoint until Phase 8 Exercise 6. Continue recording consequential security findings, architecture decisions, and migration changes when they occur. Before final merge, reconcile all eight canonical project documents against the actual repository and verified test/CI evidence.

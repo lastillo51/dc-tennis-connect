@@ -6,9 +6,9 @@ This document tracks implemented, planned, and future functionality for DC Tenni
 
 The feature backlog supports incremental application development and ensures that new features can be introduced without unnecessarily disrupting existing components.
 
-**Current Development Phase:** Phase 7 — Completed
+**Current Development Phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 3: ORM models and migrations; pending merge)
 
-**Next Development Phase:** Phase 8 — PostgreSQL application persistence and real public court data. Phase 7 frontend work has been squash-merged into `main`.
+**Previous Phase:** Phase 7 — Completed and merged into `main`.
 
 ## 2. Feature Management Principles
 
@@ -30,6 +30,7 @@ The backlog uses two types of identifiers:
 |---|---|
 | `FB-XXX` | Tracks application features across development phases |
 | `FE-XXX` | Tracks implementation tasks specific to Phase 7 frontend development |
+| `DB-XXX` | Tracks Phase 8 PostgreSQL and public court data implementation tasks |
 
 Feature identifiers shall remain stable.
 
@@ -181,6 +182,30 @@ The following features remain outside Phase 7:
 
 These features will be introduced in later phases.
 
+## Phase 8 — Database and Real Court Data Backlog
+
+These `DB-XXX` task identifiers are distinct from the existing application (`FB-XXX`) and frontend (`FE-XXX`) identifiers. A planning task does not establish implementation completion.
+
+| ID | Task | Status | Exercise |
+|---|---|---|---|
+| DB-001 | Database architecture and documentation | In Progress — updated through Exercise 3; final review pending | 1 |
+| DB-002 | PostgreSQL connectivity and configuration | In Review — implemented, verified, and pushed to feature branch | 2 |
+| DB-003 | SQLAlchemy court models and constraints | In Review — implemented and tested locally; merge pending | 3 |
+| DB-004 | Alembic migrations | In Review — initial migration applied and rollback verified; merge pending | 3 |
+| DB-005 | Court repository layer | Planned | 4 |
+| DB-006 | Database-backed JSON API and Jinja2 pages | Planned | 4 |
+| DB-007 | Public court source evaluation and permitted reuse | Planned | 5 |
+| DB-008 | Validated, repeatable public data import | Planned | 5 |
+| DB-009 | Database security and regression testing | In Progress — foundational tests and scans implemented; final phase checks pending | 5–6 |
+| DB-010 | Final review, pull request, merge, and snapshot | Planned | 6 |
+
+**Exercise 3 evidence:** PostgreSQL 17 is healthy with a persistent volume and localhost-only access. SQLAlchemy/Psycopg connectivity, session lifecycle, and standalone diagnostics are verified. Alembic revision `70a0a04f5a58` creates `courts` and `court_sources`; upgrade, downgrade, and re-upgrade were tested on a disposable database. ORM metadata, database constraints, and schema consistency tests pass. Database integration tests run with `RUN_DB_TESTS=1` and skip by design in CI without PostgreSQL. Existing API/frontend still use fictional records. The Exercise 3 commit and merge are not yet complete.
+
+**Acceptance constraints:** Keep the existing API schema and frontend behavior; use source URLs and verification timestamps; distinguish published hours from actual occupancy; reject invalid or duplicate imports; protect database credentials; and do not mark real-data features completed until imported records have been verified.
+
+`FB-002`, `FB-003`, `FB-004`, and `FB-006` remain partially implemented or planned until Phase 8 data requirements are satisfied. `FB-001` and `FB-005` retain their Phase 7 completed status.
+
+
 ## 6. Feature Status Definitions
 
 | Status | Definition |
@@ -274,7 +299,7 @@ Security controls will expand as authentication, persistent user information, an
 | Phase 5 | Kubernetes with kind | Complete |
 | Phase 6 | Terraform and Infrastructure as Code | Complete |
 | Phase 7 | Responsive frontend development | Completed |
-| Phase 8 | PostgreSQL integration and real court data | Planned |
+| Phase 8 | PostgreSQL integration and real court data | In Progress — Exercise 3, local verification; merge pending |
 | Phase 9 | Player accounts and match scheduling | Planned |
 | Phase 10 | Cloud deployment and public HTTPS access | Planned |
 | Phase 11 | Production security and operational readiness | Planned |
@@ -301,8 +326,8 @@ This document shall be reviewed when:
 
 ## 11. Current Project Status
 
-**Current Phase:** Phase 7 — Completed  
-**Next Phase:** Phase 8 — PostgreSQL application persistence and real public court data  
+**Current Phase:** Phase 8 — PostgreSQL Integration and Real Public Court Data (Exercise 3: ORM models and migrations; pending merge)  
+**Previous Phase:** Phase 7 — Completed  
 **Repository baseline:** Phase 7 frontend pull request squash-merged into `main`; local and remote `main` synchronized, and frontend feature branches removed.
 
 ### Completed Phase 7 Scope
@@ -313,11 +338,33 @@ This document shall be reviewed when:
 - Local Docker and kind Kubernetes frontend compatibility verification.
 - Frontend and backend regression testing, security scanning, architecture updates, and GitHub integration.
 
+### Phase 8 Progress
+
+- Exercise 1 planning documents created and maintained as architecture evolved.
+- Exercise 2 PostgreSQL connection foundation verified and pushed to `feature/postgresql-court-data`.
+- Exercise 3 ORM models and Alembic migration implemented and tested locally; final review and GitHub synchronization pending.
+- Database-backed API/frontend integration (Exercise 4) and authorized real court data import (Exercise 5) have not started.
+
 ### Outstanding Work and Evidence
 
-- Real public court data, database persistence, player accounts, and match scheduling are future phases.
+- PostgreSQL connectivity and the initial court/source schema are implemented locally. Database-backed application retrieval, real public court data, player accounts, and match scheduling remain future work.
 - Styled error pages and a broader WCAG audit remain follow-up improvements.
 - `SEC-FE-001` remains tracked pending an evidence-supported disposition; Trivy High findings require triage.
 - Final CI run identifiers and any incomplete scan metadata remain in `docs/runbooks/security-findings.md` until verified.
 
 **Long-Term Goal:** Deliver a secure, publicly accessible application that helps Washington, D.C. tennis players discover courts, coordinate matches, and navigate to playing locations. Public production deployment is not yet approved.
+
+## Phase 8 Exercise 4 — Consolidated Documentation Checkpoint (2026-11-18)
+
+**Status:** Implementation in progress; final Exercise 4 regression, security, deployment review, commit and CI confirmation remain subject to verification. This checkpoint does not declare Phase 8 complete.
+
+- PostgreSQL 17 runs locally through Docker Compose. SQLAlchemy 2.x, Psycopg 3, and Alembic are configured. The initial `courts` and `court_sources` schema is at Alembic revision `70a0a04f5a58`; upgrades, downgrades, and re-upgrades were verified against a disposable database.
+- The application court service now uses `app/db/repositories/court_repository.py` and `app/api/mappers/court_mapper.py` to retrieve and map persistent records to the existing Pydantic `Court` response. FastAPI JSON and Jinja2 court routes use the `get_db` session dependency.
+- Existing API paths, nested location fields, search and public filtering, HTTP 404/422 handling, and trusted Google Maps directions generation remain the intended compatibility contract.
+- The `dc_tennis_test` database holds transaction-isolated fictional fixtures for tests. Existing three-court assumptions are being adapted to those fixtures. The latest reported full run was 80 passed, 2 failed, 1 warning; the two accessibility-test failures were traced to obsolete service signatures, and a subsequent syntax error was identified. A clean final full-suite result has not yet been supplied.
+- The normal development database is not seeded with fictional fixtures; real public court records, verified operating hours and closure persistence, provenance-based import, and scheduling remain future work. Published hours must not be presented as guaranteed occupancy or official reservations.
+- PostgreSQL integration tests are opt-in through `RUN_DB_TESTS=1`; CI without a PostgreSQL service skips database-dependent tests. A PostgreSQL-backed CI job remains planned. Container/Kubernetes database networking and production-readiness require separate validation.
+- Security review continues to track `SEC-FE-001`, historical Trivy image findings, and the Phase 8 OpenTelemetry advisory `CVE-2026-126360`. Record a resolved status only with actual patched-dependency and rescan evidence; preserve all historical results.
+- **Documentation cadence:** Routine documentation edits are deferred after this checkpoint until Phase 8 Exercise 6. Continue recording consequential security findings, architecture decisions, and migration changes when they occur. Before final merge, reconcile all eight canonical project documents against the actual repository and verified test/CI evidence.
+
+**Phase 8 backlog checkpoint:** DB-001 through DB-004 implemented and verified in earlier exercises; DB-005 and DB-006 implemented locally and undergoing final review; DB-007 through DB-010 not completed. Do not mark any feature Completed under the merge-based convention until merged to `main`.
